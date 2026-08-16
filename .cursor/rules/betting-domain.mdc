@@ -93,6 +93,16 @@ A decision at time `T` may use only data whose timestamps are `<= T` (and that w
 
 Closing odds, kickoff, and cutoff rules must be explicit. Do not silently use "latest known odds" if those odds arrived after the decision point.
 
+Backtest Engine v1 is a pure chronological replay of already-prepared `BettingOpportunity` inputs. It must:
+
+- process opportunities in caller order with non-decreasing `decisionAt` (do not silently sort)
+- settle open bets with `settlementAt <= T` before the decision at `T` (equal timestamps settle first)
+- never use a future final score, later odds, or eventual profit to accept, reject, size, or rank bets
+- size payouts from the opportunity's historical odds at decision time
+- reuse `StrategyEngine`, `SettlementEngine`, `PayoutCalculator`, and `BankrollAccountingEngine` rather than duplicating their formulas
+- treat `maxAcceptedBets` as the first N StrategyEngine accepts in chronological order, never a hindsight "best N"
+- be deterministic: same dataset and `StrategyConfig` → same `BacktestResult` (no `Clock`, random, DB, or network)
+
 If a backtest metric changes unexpectedly, investigate why. Do not "fix" it by updating expected test values. See `testing.mdc`.
 
 ## Strategy configuration

@@ -12,6 +12,7 @@ Best suited for betting mathematics, settlement, probability, domain engines, ma
 Prefer pure tests without Spring when Spring is unnecessary.
 
 - Domain engines: construct directly, no `@SpringBootTest`.
+- Backtest Engine tests are pure JUnit. Do not hit persistence, the network, or Spring. Do not derive test settlement probabilities from final scores.
 - Collaborators: Mockito (`@ExtendWith(MockitoExtension.class)`).
 - Time-dependent logic: inject `Clock` and use `Clock.fixed(...)`.
 - If a mutable clock is used, reset it in `@BeforeEach` so tests do not leak time.
