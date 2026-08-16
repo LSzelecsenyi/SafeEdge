@@ -55,6 +55,7 @@ public final class HistoricalBacktestReportFormatter {
 				.append('\n');
 		text.append("Skipped no-league-history: ").append(stats.matchesSkippedNoLeagueHistory()).append('\n');
 		text.append("Skipped insufficient-history: ").append(stats.matchesSkippedInsufficientHistory()).append('\n');
+		text.append("Skipped fitting-failed: ").append(stats.matchesSkippedFittingFailed()).append('\n');
 		text.append("Skipped missing quote: ").append(stats.matchesSkippedMissingQuote()).append('\n');
 		text.append("Candidates generated: ").append(stats.candidatesGenerated()).append('\n');
 		text.append("  HOME: ").append(stats.homeCandidatesGenerated()).append('\n');

@@ -79,7 +79,7 @@ P(X = k) = exp(-λ) λ^k / k!     k = 0..maxGoalsPerTeam
 P(i, j)  = P_home(i) * P_away(j)
 ```
 
-Default `maxGoalsPerTeam = 10` (121 scorelines). The truncated mass is **renormalized** so `ScoreProbabilityDistribution` sums to **exactly 1**. Captured mass before normalization is returned for diagnostics; for realistic λ it is extremely close to 1.
+Default `maxGoalsPerTeam = 10` (121 scorelines). The truncated mass is **renormalized** so `ScoreProbabilityDistribution` sums to **exactly 1**. Each cell except the last is `cellMass / sum(cellMass)` in `DECIMAL128`, where `cellMass` is `BigDecimal.valueOf(raw)`; the last cell is the residual `1 - sum(previous)`. A residual below 0 by at most `1e-12` is absorbed into an earlier cell; a larger residual fails. Captured mass before normalization is returned for diagnostics; for realistic λ it is extremely close to 1.
 
 ## Configuration
 
@@ -100,7 +100,7 @@ Default `maxGoalsPerTeam = 10` (121 scorelines). The truncated mass is **renorma
 - Truncation at 10 goals
 - Half-life and max goals are uncalibrated assumptions
 
-v1 exists so later models can be compared against a clean, leak-free baseline.
+v1 exists so later models can be compared against a clean, leak-free baseline. It remains the frozen independent-Poisson baseline; Dixon-Coles and attack/defence shrinkage live in [Probability Model v2](probability-model-v2.md), not here.
 
 ## Evaluation helper
 

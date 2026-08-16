@@ -19,7 +19,7 @@ future football probability model
 
 There is **no trained predictive model** in this layer. Tests may supply synthetic distributions **or** a point-in-time `ScoreProbabilityDistribution` from [Probability Model v1](probability-model-v1.md). Bookmaker odds are a price, not a probability estimate. An event's final score must never be used to build the distribution for that same event.
 
-The v1 football model is `PoissonFootballProbabilityModel`. CandidateEngine still only consumes `ScoreProbabilityDistribution`.
+The v1 football model is `PoissonFootballProbabilityModel`. v2 is `RegularizedDixonColesFootballProbabilityModel`. CandidateEngine still only consumes `ScoreProbabilityDistribution`.
 
 ## Score distribution
 

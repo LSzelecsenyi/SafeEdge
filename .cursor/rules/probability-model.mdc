@@ -1,0 +1,28 @@
+---
+description: Probability-model development, frozen v1/v2, v3, and reserved validation leagues
+alwaysApply: true
+---
+
+# SafeEdge — Probability models
+
+`PoissonFootballProbabilityModel` is the frozen v1 baseline. Do not change its semantics to make a later model look better.
+
+v2 is `RegularizedDixonColesFootballProbabilityModel`. v3 is `JointDixonColesFootballProbabilityModel`. All implement `FootballProbabilityModel`. Walk-forward orchestration selects the model. Do not branch on model version inside CandidateEngine, StrategyEngine, BacktestEngine, or SettlementEngine.
+
+Do not mutate v1 or v2 to make v3 look better. Do not silently fall back from v3 to v1/v2.
+
+## Development vs validation
+
+Probability-model development and diagnostic tuning use only Premier League, Bundesliga, and Serie A.
+
+La Liga and Ligue 1 are reserved later validation. Do not run them, inspect them, or import new diagnostics for them during model development.
+
+## Fitting rules
+
+Bookmaker odds are never features of the score model and never enter ρ, shrinkage, attack/defence, or other score-model fitting.
+
+Betting ROI, candidate edge, and strategy results never fit ρ, shrinkage, regularization, half-life, or other score-model parameters.
+
+Evaluate model changes on edge ranking, settlement calibration, score likelihood, and confidence compression. Do not treat ROI alone as success or failure.
+
+When uncertain, stop rather than leaking market prices into the score model.

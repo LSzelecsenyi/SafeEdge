@@ -9,7 +9,7 @@ historical_match + historical_ah_offer
         ↓
 HistoricalWalkForwardDatasetBuilder  (prior dates only)
         ↓
-PoissonFootballProbabilityModel
+FootballProbabilityModel  (v1 Poisson default, injected v2, or injected v3)
         ↓
 ScoreProbabilityDistribution
         ↓
@@ -22,7 +22,7 @@ BacktestEngine  (StrategyConfig)
 BacktestResult
 ```
 
-No parameter search. No Dixon-Coles, Elo, xG, or ML. One configured `ProbabilityModelConfig` and supplied `StrategyConfig` values per comparison.
+No parameter search. No Elo, xG, or ML. One configured model per comparison. Probability Model v2 (regularized Dixon-Coles) and v3 (jointly fitted Dixon-Coles) are selected at orchestration time; CandidateEngine and BacktestEngine do not branch on model version.
 
 ## True walk-forward
 
@@ -166,15 +166,75 @@ Starting bankroll is simulation capital only. `maxAcceptedBets` keeps existing c
 
 Default comparison uses `StrategyPresetFactory` data for DEFENSIVE, BALANCED, GROWTH, and FLAT_STAKE. The engines remain config-driven. The runner does not declare a winner.
 
+## Baseline diagnostics
+
+Opt-in autopsy of one already-prepared walk-forward dataset and the four strategy backtests. It does not retune Poisson, StrategyConfig, or quote source. Same `SAFEEDGE_HISTORICAL_BACKTEST_*` properties as the evaluation runner.
+
+```text
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-baseline-diagnostics"
+```
+
+Writes `docs/results/baseline-001-diagnostics.md`. Unit-stake tables are diagnostic only.
+
+## Baseline 002 edge quality
+
+Opt-in ranking / settlement-calibration autopsy of the same prepared walk-forward candidates. Same `SAFEEDGE_HISTORICAL_BACKTEST_*` properties. Does not retune Poisson or StrategyConfig.
+
+```text
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-baseline-002"
+```
+
+Writes `docs/results/baseline-002-edge-quality.md`.
+
+## Baseline 003 Bundesliga replication
+
+Zero-tuning replication of Baseline 001/002 on `BUNDESLIGA` with the same Poisson defaults, quote source, and evaluation window. Writes Bundesliga diagnostics and a cross-league comparison against the published Premier League Baseline 001/002 numbers. Does not retune the model or select a league to bet.
+
+```text
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-baseline-003"
+```
+
+Requires `SAFEEDGE_HISTORICAL_BACKTEST_COMPETITION=BUNDESLIGA` and the same `TRAINING_FROM_SEASON=2014`, `FROM_SEASON=2019`, `TO_SEASON=2023`, `QUOTE_SOURCE=MARKET_AVERAGE` properties. Writes `docs/results/baseline-003-bundesliga.md` and `docs/results/baseline-003-cross-league-validation.md`.
+
+## Baseline 004 Serie A replication
+
+Zero-tuning replication of Baseline 001/002 on `SERIE_A` with the same Poisson defaults, quote source, and evaluation window. Writes Serie A diagnostics and a three-league comparison against the published Premier League and Bundesliga numbers. Does not retune the model, overwrite Baseline 001–003 reports, or select a league to bet.
+
+```text
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-baseline-004"
+```
+
+Requires `SAFEEDGE_HISTORICAL_BACKTEST_COMPETITION=SERIE_A` and the same `TRAINING_FROM_SEASON=2014`, `FROM_SEASON=2019`, `TO_SEASON=2023`, `QUOTE_SOURCE=MARKET_AVERAGE` properties. Writes `docs/results/baseline-004-serie-a.md` and `docs/results/baseline-004-three-league-validation.md`.
+
+## Probability Model v2 development evaluation
+
+Compares frozen v1 Poisson against `RegularizedDixonColesFootballProbabilityModel` on Premier League, Bundesliga, and Serie A only. Same window and `MARKET_AVERAGE` quotes. Does not overwrite Baseline 001–004. Does not run La Liga or Ligue 1.
+
+```text
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-probability-model-v2"
+```
+
+Writes `docs/results/probability-model-v2-development.md`. Shrinkage default and ρ fitting were declared before the run; they are not ROI-tuned. Success is ranking and calibration, not ROI.
+
+## Probability Model v3 development evaluation
+
+Compares frozen v1 Poisson and v2 regularized Dixon-Coles against `JointDixonColesFootballProbabilityModel` on Premier League, Bundesliga, and Serie A only. Same window and `MARKET_AVERAGE` quotes. One frozen v3 config across all three leagues. Does not overwrite Baseline 001–004 or the v2 development report. Does not run La Liga or Ligue 1.
+
+```text
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-probability-model-v3"
+```
+
+Writes `docs/results/probability-model-v3-development.md`. Regularization, identifiability, and ρ parameterization were declared before the run; they are not ROI-tuned. Success is ranking and calibration versus the better of v1/v2, not ROI.
+
 ## Limitations
 
 - Date-only source: no real pre-match observation time; synthetic UTC date order only.
-- One competition per run; Poisson is league-specific.
+- One competition per run; the probability model is league-specific.
 - Exact source team spellings; no TeamAlias / ClubElo / Tippmix join.
-- Independent Poisson; no Dixon-Coles.
+- Default builder still uses independent Poisson v1. Dixon-Coles v2 and jointly fitted Dixon-Coles v3 are selected at orchestration.
 - In-memory only; no evaluation persistence, REST, or UI.
-- Complexity is roughly O(N²) model scans over loaded matches (the Poisson implementation filters the growing prior list per target). Acceptable for a manual v1 run; no prediction-state cache (a cache would risk leakage).
+- Complexity is roughly O(N²) model scans over loaded matches. Acceptable for a manual run; no prediction-state cache (a cache would risk leakage).
 
 ## Out of scope
 
-Parameter search, Monte Carlo, ML, Elo, xG, Dixon-Coles, Tippmix historical odds, automatic “best strategy” selection, evaluation tables, API, Angular.
+Parameter search, Monte Carlo, ML, Elo, xG, Tippmix historical odds, automatic “best strategy” selection, evaluation tables, API, Angular. La Liga / Ligue 1 remain reserved validation for probability-model work.

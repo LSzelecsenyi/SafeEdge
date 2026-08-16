@@ -161,6 +161,8 @@ Historical pre-match features may use only information strictly available before
 
 Probability models must be point-in-time safe: target and future scores never enter fitting, same-date date-only matches are excluded, and bookmaker odds are not baseline prediction features. The model output is a full score distribution that sums to 1. Insufficient history is an unavailable prediction, not a zero-probability grid. Evaluation and backtests must use chronological out-of-sample splits.
 
+`PoissonFootballProbabilityModel` is the frozen v1 baseline. Later score models must be compared against it rather than replacing its semantics. Bookmaker odds and betting ROI must not fit shrinkage, Dixon-Coles ρ, or other score-model parameters. Probability-model development uses Premier League, Bundesliga, and Serie A only; La Liga and Ligue 1 are reserved validation.
+
 ## Historical walk-forward evaluation
 
 Historical evaluation must be walk-forward. Training data for a target is strictly prior in time (`matchDate < targetDate`). Same-date unknown-order matches cannot train each other.

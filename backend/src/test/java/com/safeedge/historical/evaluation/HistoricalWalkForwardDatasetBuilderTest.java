@@ -18,12 +18,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.safeedge.backtest.HistoricalBettingOpportunity;
 import com.safeedge.backtest.HistoricalEventResult;
+import com.safeedge.candidate.CandidateEngine;
 import com.safeedge.event.domain.SelectionType;
 import com.safeedge.historical.domain.CanonicalCompetition;
 import com.safeedge.historical.domain.HistoricalQuoteSource;
 import com.safeedge.historical.domain.HistoricalSource;
 import com.safeedge.historical.features.HistoricalMatchRecord;
+import com.safeedge.probability.FootballProbabilityModel;
 import com.safeedge.probability.ProbabilityModelConfig;
+import com.safeedge.probability.ProbabilityModelV2Config;
+import com.safeedge.probability.ProbabilityPrediction;
+import com.safeedge.probability.ProbabilityPredictionStatus;
+import com.safeedge.probability.RegularizedDixonColesFootballProbabilityModel;
 import com.safeedge.settlement.MatchScore;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -278,5 +284,83 @@ class HistoricalWalkForwardDatasetBuilderTest {
 		assertThat(request.modelConfig()).isEqualTo(new ProbabilityModelConfig(90, 8, 3));
 		assertThat(request.modelConfig()).isNotEqualTo(ProbabilityModelConfig.defaults());
 		assertThat(MIN1.minimumTeamMatches()).isEqualTo(1);
+	}
+
+	@Test
+	void injectedUnregularizedV2MatchesDefaultV1Builder() {
+		LocalDate evalDate = LocalDate.of(2023, 8, 12);
+		HistoricalMatchRecord eval = match(S23, "H", "A", evalDate, 2, 1, 10);
+		List<HistoricalMatchRecord> matches = new ArrayList<>(strongHomeWarmup(S22, evalDate, 1));
+		matches.add(eval);
+		Map<String, HistoricalAhQuoteSnapshot> quotes =
+				quotes(quote(eval, HistoricalQuoteSource.PINNACLE, LINE_ZERO, HOME_ODDS, AWAY_ODDS));
+		WalkForwardEvaluationRequest request = eval2023(HistoricalQuoteSource.PINNACLE);
+		HistoricalWalkForwardDatasetBuilder v2Unregularized = new HistoricalWalkForwardDatasetBuilder(
+				new RegularizedDixonColesFootballProbabilityModel(
+						new ProbabilityModelV2Config(180, 10, 1, BigDecimal.ZERO, false)),
+				new CandidateEngine());
+		assertThat(v2Unregularized.build(matches, quotes, request)).isEqualTo(builder.build(matches, quotes, request));
+	}
+
+	@Test
+	void injectedV2ModelCanChangeCandidatesWithoutChangingCandidateEngine() {
+		LocalDate evalDate = LocalDate.of(2023, 8, 12);
+		HistoricalMatchRecord eval = match(S23, "H", "A", evalDate, 2, 1, 10);
+		List<HistoricalMatchRecord> matches = new ArrayList<>(strongHomeWarmup(S22, evalDate, 1));
+		matches.add(eval);
+		Map<String, HistoricalAhQuoteSnapshot> quotes =
+				quotes(quote(eval, HistoricalQuoteSource.PINNACLE, LINE_ZERO, HOME_ODDS, AWAY_ODDS));
+		WalkForwardEvaluationRequest request = eval2023(HistoricalQuoteSource.PINNACLE);
+		HistoricalWalkForwardDatasetBuilder v2 = new HistoricalWalkForwardDatasetBuilder(
+				new RegularizedDixonColesFootballProbabilityModel(
+						new ProbabilityModelV2Config(180, 10, 1, new BigDecimal("5"), true)),
+				new CandidateEngine());
+		HistoricalWalkForwardDataset v1Dataset = builder.build(matches, quotes, request);
+		HistoricalWalkForwardDataset v2Dataset = v2.build(matches, quotes, request);
+		assertThat(v2Dataset.stats().predictionsAvailable()).isEqualTo(v1Dataset.stats().predictionsAvailable());
+		assertThat(v2Dataset.opportunities()).hasSameSizeAs(v1Dataset.opportunities());
+	}
+
+	@Test
+	void buildWithPredictionsKeepsTheSameDatasetAndCapturesAvailablePredictionsWithoutQuotes() {
+		LocalDate evalDate = LocalDate.of(2023, 8, 12);
+		HistoricalMatchRecord eval = match(S23, "H", "A", evalDate, 1, 0, 10);
+		List<HistoricalMatchRecord> matches = new ArrayList<>(venueWarmup(S22, "H", "A", evalDate, 1));
+		matches.add(eval);
+		WalkForwardEvaluationRequest request = eval2023(HistoricalQuoteSource.PINNACLE);
+		HistoricalWalkForwardBuildOutput withoutQuote =
+				builder.buildWithPredictions(matches, Map.of(), request);
+		assertThat(withoutQuote.dataset()).isEqualTo(builder.build(matches, Map.of(), request));
+		assertThat(withoutQuote.dataset().opportunities()).isEmpty();
+		assertThat(withoutQuote.predictions()).hasSize(1);
+		assertThat(withoutQuote.predictions().getFirst().eventId())
+				.isEqualTo(HistoricalWalkForwardIdentities.eventId(eval));
+		assertThat(withoutQuote.predictions().getFirst().actualScore()).isEqualTo(new MatchScore(1, 0));
+		assertThat(withoutQuote.predictions().getFirst().season()).isEqualTo(S23);
+
+		Map<String, HistoricalAhQuoteSnapshot> quotes =
+				quotes(quote(eval, HistoricalQuoteSource.PINNACLE, LINE_ZERO, HOME_ODDS, AWAY_ODDS));
+		HistoricalWalkForwardBuildOutput withQuote = builder.buildWithPredictions(matches, quotes, request);
+		assertThat(withQuote.dataset()).isEqualTo(builder.build(matches, quotes, request));
+		assertThat(withQuote.dataset().opportunities()).hasSize(2);
+		assertThat(withQuote.predictions()).hasSize(1);
+	}
+
+	@Test
+	void fittingFailedSkipsWithoutFallingBackOrInventingADistribution() {
+		LocalDate evalDate = LocalDate.of(2023, 8, 12);
+		HistoricalMatchRecord eval = match(S23, "H", "A", evalDate, 1, 0, 10);
+		List<HistoricalMatchRecord> matches = new ArrayList<>(venueWarmup(S22, "H", "A", evalDate, 1));
+		matches.add(eval);
+		FootballProbabilityModel failing = (trainingData, target) -> ProbabilityPrediction.unavailable(
+				ProbabilityPredictionStatus.FITTING_FAILED, trainingData.size(), 0, 0);
+		HistoricalWalkForwardDatasetBuilder v3 = new HistoricalWalkForwardDatasetBuilder(failing, new CandidateEngine());
+		HistoricalWalkForwardDataset dataset = v3.build(
+				matches,
+				quotes(quote(eval, HistoricalQuoteSource.PINNACLE, LINE_ZERO, HOME_ODDS, AWAY_ODDS)),
+				eval2023(HistoricalQuoteSource.PINNACLE));
+		assertThat(dataset.opportunities()).isEmpty();
+		assertThat(dataset.stats().predictionsAvailable()).isZero();
+		assertThat(dataset.stats().matchesSkippedFittingFailed()).isEqualTo(1);
 	}
 }

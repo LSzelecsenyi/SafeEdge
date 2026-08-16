@@ -68,7 +68,7 @@ public record ProbabilityPrediction(
 				capturedMass);
 	}
 
-	static ProbabilityPrediction unavailable(
+	public static ProbabilityPrediction unavailable(
 			ProbabilityPredictionStatus status, int trainingMatchCount, int homeHistoryCount, int awayHistoryCount) {
 		if (status == ProbabilityPredictionStatus.AVAILABLE) {
 			throw new ProbabilityModelException("AVAILABLE is not an unavailable status");

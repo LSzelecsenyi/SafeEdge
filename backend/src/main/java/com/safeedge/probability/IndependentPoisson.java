@@ -9,6 +9,23 @@ final class IndependentPoisson {
 	private IndependentPoisson() {
 	}
 
+	static double probability(double lambda, int goals) {
+		if (goals < 0) {
+			throw new ProbabilityModelException("goals must be >= 0");
+		}
+		if (lambda < 0 || Double.isNaN(lambda) || Double.isInfinite(lambda)) {
+			throw new ProbabilityModelException("lambda must be a finite non-negative number");
+		}
+		if (lambda == 0.0d) {
+			return goals == 0 ? 1.0d : 0.0d;
+		}
+		double probability = Math.exp(-lambda);
+		for (int k = 1; k <= goals; k++) {
+			probability *= lambda / k;
+		}
+		return probability;
+	}
+
 	static double[] pmf(double lambda, int maxGoals) {
 		if (lambda < 0 || Double.isNaN(lambda) || Double.isInfinite(lambda)) {
 			throw new ProbabilityModelException("lambda must be a finite non-negative number");

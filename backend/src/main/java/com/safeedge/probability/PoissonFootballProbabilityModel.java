@@ -10,8 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Time-decayed independent Poisson score model. Dixon-Coles rho is not fitted
- * in v1; low-score dependence is a later upgrade.
+ * Frozen Probability Model v1: time-decayed independent Poisson. Do not change
+ * its semantics; later models compare against this baseline. Dixon-Coles rho is
+ * not fitted here.
  */
 public final class PoissonFootballProbabilityModel implements FootballProbabilityModel {
 
@@ -134,7 +135,8 @@ public final class PoissonFootballProbabilityModel implements FootballProbabilit
 		double[] awayPmf = IndependentPoisson.pmf(lambdaAway.doubleValue(), config.maxGoalsPerTeam());
 		double[][] joint = IndependentPoisson.joint(homePmf, awayPmf);
 		double captured = IndependentPoisson.sum(joint);
-		ScoreProbabilityDistribution distribution = ScoreGridNormalizer.normalize(joint, captured);
+		ScoreProbabilityDistribution distribution =
+				ScoreGridNormalizer.normalize(joint, captured, lambdaHome, lambdaAway);
 		return ProbabilityPrediction.available(
 				lambdaHome,
 				lambdaAway,

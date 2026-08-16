@@ -65,6 +65,17 @@ public final class HistoricalWalkForwardDatasetBuilder {
 			List<HistoricalMatchRecord> matches,
 			Map<String, HistoricalAhQuoteSnapshot> quotesByEventId,
 			WalkForwardEvaluationRequest request) {
+		return buildWithPredictions(matches, quotesByEventId, request).dataset();
+	}
+
+	/**
+	 * Same walk-forward pass as {@link #build}, plus available prediction
+	 * snapshots for diagnostics. Does not change candidate or result rows.
+	 */
+	public HistoricalWalkForwardBuildOutput buildWithPredictions(
+			List<HistoricalMatchRecord> matches,
+			Map<String, HistoricalAhQuoteSnapshot> quotesByEventId,
+			WalkForwardEvaluationRequest request) {
 		if (matches == null) {
 			throw new HistoricalDataException("matches are required");
 		}
@@ -82,6 +93,7 @@ public final class HistoricalWalkForwardDatasetBuilder {
 		StatsAccumulator stats = new StatsAccumulator(request, loaded.size());
 		List<HistoricalBettingOpportunity> opportunities = new ArrayList<>();
 		List<HistoricalEventResult> eventResults = new ArrayList<>();
+		List<HistoricalPredictionSnapshot> predictions = new ArrayList<>();
 		List<ProbabilityTrainingMatch> training = new ArrayList<>();
 
 		Map<LocalDate, List<HistoricalMatchRecord>> byDate = groupByDate(loaded);
@@ -90,13 +102,14 @@ public final class HistoricalWalkForwardDatasetBuilder {
 				if (!isEvaluationMatch(match, request)) {
 					continue;
 				}
-				evaluateMatch(match, training, quotes, request, model, stats, opportunities, eventResults);
+				evaluateMatch(match, training, quotes, request, model, stats, opportunities, eventResults, predictions);
 			}
 			for (HistoricalMatchRecord match : day.getValue()) {
 				training.add(ProbabilityTrainingMatch.from(match));
 			}
 		}
-		return new HistoricalWalkForwardDataset(stats.toStats(), opportunities, eventResults);
+		return new HistoricalWalkForwardBuildOutput(
+				new HistoricalWalkForwardDataset(stats.toStats(), opportunities, eventResults), predictions);
 	}
 
 	private void evaluateMatch(
@@ -107,7 +120,8 @@ public final class HistoricalWalkForwardDatasetBuilder {
 			FootballProbabilityModel model,
 			StatsAccumulator stats,
 			List<HistoricalBettingOpportunity> opportunities,
-			List<HistoricalEventResult> eventResults) {
+			List<HistoricalEventResult> eventResults,
+			List<HistoricalPredictionSnapshot> predictions) {
 		stats.matchesEvaluated++;
 		String eventId = HistoricalWalkForwardIdentities.eventId(match);
 		MatchPredictionContext target = new MatchPredictionContext(
@@ -127,6 +141,13 @@ public final class HistoricalWalkForwardDatasetBuilder {
 			}
 			return;
 		}
+		if (prediction.status() == ProbabilityPredictionStatus.FITTING_FAILED) {
+			stats.matchesSkippedFittingFailed++;
+			if (selectedQuote(quotes, eventId, request) == null) {
+				stats.matchesSkippedMissingQuote++;
+			}
+			return;
+		}
 		if (!prediction.available()) {
 			throw new HistoricalDataException("Unexpected prediction status " + prediction.status());
 		}
@@ -138,6 +159,14 @@ public final class HistoricalWalkForwardDatasetBuilder {
 							stats.logLossObservations++;
 						},
 						() -> stats.logLossMissingFromGrid++);
+		predictions.add(new HistoricalPredictionSnapshot(
+				eventId,
+				match.season(),
+				match.matchDate(),
+				prediction.homeExpectedGoals(),
+				prediction.awayExpectedGoals(),
+				prediction.scoreDistribution(),
+				match.score()));
 		HistoricalAhQuoteSnapshot quote = selectedQuote(quotes, eventId, request);
 		if (quote == null) {
 			stats.matchesSkippedMissingQuote++;
@@ -273,6 +302,7 @@ public final class HistoricalWalkForwardDatasetBuilder {
 		private int matchesEvaluated;
 		private int matchesSkippedNoLeagueHistory;
 		private int matchesSkippedInsufficientHistory;
+		private int matchesSkippedFittingFailed;
 		private int matchesSkippedMissingQuote;
 		private int predictionsAvailable;
 		private int predictionsWithSelectedAhQuote;
@@ -303,6 +333,7 @@ public final class HistoricalWalkForwardDatasetBuilder {
 					matchesEvaluated,
 					matchesSkippedNoLeagueHistory,
 					matchesSkippedInsufficientHistory,
+					matchesSkippedFittingFailed,
 					matchesSkippedMissingQuote,
 					predictionsAvailable,
 					predictionsWithSelectedAhQuote,

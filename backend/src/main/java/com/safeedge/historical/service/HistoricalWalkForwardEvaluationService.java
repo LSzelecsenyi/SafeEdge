@@ -1,9 +1,11 @@
 package com.safeedge.historical.service;
 
+import com.safeedge.candidate.CandidateEngine;
 import com.safeedge.historical.domain.HistoricalObservationType;
 import com.safeedge.historical.domain.HistoricalQuoteSource;
 import com.safeedge.historical.domain.HistoricalSource;
 import com.safeedge.historical.evaluation.HistoricalAhQuoteSnapshot;
+import com.safeedge.historical.evaluation.HistoricalWalkForwardBuildOutput;
 import com.safeedge.historical.evaluation.HistoricalWalkForwardDataset;
 import com.safeedge.historical.evaluation.HistoricalWalkForwardDatasetBuilder;
 import com.safeedge.historical.evaluation.HistoricalWalkForwardIdentities;
@@ -13,6 +15,7 @@ import com.safeedge.historical.repository.HistoricalAhOfferEntity;
 import com.safeedge.historical.repository.HistoricalAhOfferRepository;
 import com.safeedge.historical.repository.HistoricalMatchEntity;
 import com.safeedge.historical.repository.HistoricalMatchRepository;
+import com.safeedge.probability.FootballProbabilityModel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +43,30 @@ public class HistoricalWalkForwardEvaluationService {
 
 	@Transactional(readOnly = true)
 	public HistoricalWalkForwardDataset buildDataset(WalkForwardEvaluationRequest request) {
+		return buildWithPredictions(request).dataset();
+	}
+
+	@Transactional(readOnly = true)
+	public HistoricalWalkForwardBuildOutput buildWithPredictions(WalkForwardEvaluationRequest request) {
+		return buildWithPredictions(request, datasetBuilder);
+	}
+
+	/**
+	 * Same persisted walk-forward load as {@link #buildWithPredictions(WalkForwardEvaluationRequest)},
+	 * using an explicit {@link FootballProbabilityModel}. Model choice belongs here, not in
+	 * CandidateEngine or BacktestEngine. The no-model overload remains Probability Model v1.
+	 */
+	@Transactional(readOnly = true)
+	public HistoricalWalkForwardBuildOutput buildWithPredictions(
+			WalkForwardEvaluationRequest request, FootballProbabilityModel model) {
+		if (model == null) {
+			throw new IllegalArgumentException("model is required");
+		}
+		return buildWithPredictions(request, new HistoricalWalkForwardDatasetBuilder(model, new CandidateEngine()));
+	}
+
+	private HistoricalWalkForwardBuildOutput buildWithPredictions(
+			WalkForwardEvaluationRequest request, HistoricalWalkForwardDatasetBuilder builder) {
 		if (request == null) {
 			throw new IllegalArgumentException("request is required");
 		}
@@ -57,7 +84,7 @@ public class HistoricalWalkForwardEvaluationService {
 			recordsById.put(entity.getId(), record);
 		}
 		Map<String, HistoricalAhQuoteSnapshot> quotes = loadSelectedQuotes(request.quoteSource(), entities, recordsById);
-		return datasetBuilder.build(records, quotes, request);
+		return builder.buildWithPredictions(records, quotes, request);
 	}
 
 	private Map<String, HistoricalAhQuoteSnapshot> loadSelectedQuotes(

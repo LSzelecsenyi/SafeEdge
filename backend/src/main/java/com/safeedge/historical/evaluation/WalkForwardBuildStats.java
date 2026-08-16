@@ -14,6 +14,7 @@ public record WalkForwardBuildStats(
 		int matchesEvaluated,
 		int matchesSkippedNoLeagueHistory,
 		int matchesSkippedInsufficientHistory,
+		int matchesSkippedFittingFailed,
 		int matchesSkippedMissingQuote,
 		int predictionsAvailable,
 		int predictionsWithSelectedAhQuote,
