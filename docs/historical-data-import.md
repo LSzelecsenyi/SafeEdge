@@ -89,12 +89,12 @@ Raw provenance: `source_file`, `source_row_number`, quote column names, and raw 
 
 Source names are stored exactly (`Man United`). There is no Team / alias crosswalk yet.
 
-## Manual import
+## Manual import (one league, one season)
 
-Default is off. No scheduler. One league + one season only:
+Default is off. No scheduler.
 
 ```text
-.\gradlew.bat bootRun -PspringProfiles=local,manual-historical-import
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-historical-import"
 ```
 
 ```text
@@ -104,18 +104,68 @@ SAFEEDGE_HISTORICAL_SEASON_START=2023
 
 `safeedge.providers.football-data.base-url` is configurable. No credentials.
 
-## Coverage before bulk import
+## Bulk import
 
-Do **not** assume uniform AH coverage. Before importing 10–15 seasons × Big 5, compute per league/season/quote source:
+`FootballDataBulkHistoricalImportManager.importRange(competitions, startSeason, endSeason)` calls the existing single-season importer once per pair. It does not fetch, parse, or persist itself.
 
-- matches
-- matchesWithBet365AH
-- matchesWithPinnacleAH
-- matchesWithMarketAggregateAH
-- coveragePercentage
+Season range is inclusive. `startSeason=2010`, `endSeason=2024` means `2010/11` … `2024/25`. Core logic does not default a global window such as 2010–2024.
 
-v1 does not implement that report.
+Execution is **sequential** (competition enum order, then seasons ascending). No parallel HTTP. One failed file is recorded (`SOURCE_NOT_FOUND`, `FETCH_FAILED`, `PARSE_FAILED`, or `IMPORT_FAILED`) and the remaining pairs continue. The bulk run is not one transaction; each season import keeps its own persistence behavior. Re-running the same range does not duplicate rows.
+
+Opt-in only. Normal `.\gradlew.bat bootRun` does not download historical files.
+
+```text
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-historical-bulk-import"
+```
+
+```text
+SAFEEDGE_HISTORICAL_BULK_START_SEASON=2023
+SAFEEDGE_HISTORICAL_BULK_END_SEASON=2023
+SAFEEDGE_HISTORICAL_BULK_LEAGUES=PREMIER_LEAGUE
+```
+
+If `SAFEEDGE_HISTORICAL_BULK_LEAGUES` is omitted, all Big 5 competitions are imported. Start/end season env vars are required; missing them skips the run.
+
+Suggested small smoke test (user-executed, not automatic): Premier League `2023/24` only, then optionally Big 5 for `2023/24` by omitting the leagues variable and keeping start=end=2023.
+
+## AH coverage audit
+
+`HistoricalAhCoverageService` is read-only over persisted `historical_match` and valid `historical_ah_offer` rows. It does not fetch CSVs or inspect raw columns. Quotes skipped at import (incomplete, invalid odds, invalid line) count as missing coverage.
+
+For each persisted competition + season, and for each quote source (`BET365`, `PINNACLE`, `MARKET_MAX`, `MARKET_AVERAGE`):
+
+```text
+coverageRate = matchesWithQuote / totalMatches
+```
+
+- `totalMatches` is the historical match count for that league-season (stable denominator across sources).
+- `matchesWithQuote` is distinct matches with at least one valid two-sided quote for that source.
+- `totalMatches == 0` → `coverageRate = 0` (no division error). League-seasons with no persisted matches are omitted from the report.
+- `ANY` coverage is distinct matches with at least one supported quote source — never the sum of per-source counts.
+- `bestQuoteSource` is the source with the highest coverage rate. Ties use `HistoricalQuoteSource` enum order (`BET365`, then `PINNACLE`, `MARKET_MAX`, `MARKET_AVERAGE`). If every source has zero quotes, `bestQuoteSource` is null.
+
+There is **no** automatic “usable season” threshold. Coverage is data for a later modelling task to choose a window. Do not assume uniform AH availability across leagues, seasons, or bookmakers.
+
+Coverage-only (no download):
+
+```text
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-historical-coverage"
+```
+
+Example log shape (**example only**, not observed Premier League data):
+
+```text
+PREMIER_LEAGUE 2023/24
+  matches: 10
+  BET365:         8 / 10 = 80.00%
+  PINNACLE:       6 / 10 = 60.00%
+  MARKET_MAX:     4 / 10 = 40.00%
+  MARKET_AVERAGE: 0 / 10 = 0.00%
+  ANY:            8 / 10 = 80.00%
+```
+
+If those 6 Pinnacle and 4 Market Max matches sit inside the 8 Bet365 matches, ANY is `8/10`, not `18/10`.
 
 ## Out of scope
 
-Probability models, Dixon-Coles, ClubElo, StatsBomb, Understat, feature engineering, 1X2/totals persistence, BacktestRequest builder, UI.
+Probability models, Dixon-Coles, ClubElo, StatsBomb, Understat, feature engineering, 1X2/totals persistence, BacktestRequest builder, UI, TeamAlias, coverage REST API, historical scheduler.

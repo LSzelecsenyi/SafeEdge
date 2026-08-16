@@ -15,6 +15,7 @@ Prefer pure tests without Spring when Spring is unnecessary.
 - Backtest Engine tests are pure JUnit. Do not hit persistence, the network, or Spring. Do not derive test settlement probabilities from final scores.
 - Candidate Engine tests are pure JUnit. Supply synthetic point-in-time score distributions; do not derive them from final scores or from `1/odds`.
 - Historical football-data parser/mapper tests use committed CSV fixtures. Do not download football-data.co.uk from unit tests.
+- Historical bulk import tests mock the single-season importer. AH coverage tests use persisted fixtures or Testcontainers; the coverage denominator is match count, and any-source coverage must count distinct matches.
 - Collaborators: Mockito (`@ExtendWith(MockitoExtension.class)`).
 - Time-dependent logic: inject `Clock` and use `Clock.fixed(...)`.
 - If a mutable clock is used, reset it in `@BeforeEach` so tests do not leak time.

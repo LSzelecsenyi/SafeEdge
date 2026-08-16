@@ -102,6 +102,8 @@ Static historical CSV imports are idempotent upserts of source records. They are
 
 Do not invent `kickoffUtc` or `observedAt` when the source has only a date or no timestamp. Fake times must not be used as look-ahead protection.
 
+Historical bulk imports stay sequential and reuse the single-season importer. One source-file failure must not abort the remaining league-season files. Re-runs are idempotent upserts, not append-only snapshots.
+
 ## When uncertain
 
 If a provider field cannot be mapped cleanly to the internal model, stop and ask instead of leaking the source shape inward.

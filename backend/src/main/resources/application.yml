@@ -45,3 +45,6 @@ safeedge:
       base-url: ${FOOTBALL_DATA_BASE_URL:https://www.football-data.co.uk}
       manual-league: ${SAFEEDGE_HISTORICAL_LEAGUE:}
       manual-season-start: ${SAFEEDGE_HISTORICAL_SEASON_START:}
+      bulk-start-season: ${SAFEEDGE_HISTORICAL_BULK_START_SEASON:}
+      bulk-end-season: ${SAFEEDGE_HISTORICAL_BULK_END_SEASON:}
+      bulk-leagues: ${SAFEEDGE_HISTORICAL_BULK_LEAGUES:}

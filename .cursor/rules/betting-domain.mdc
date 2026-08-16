@@ -155,6 +155,8 @@ Scoreline probabilities must be estimates that would have been known at decision
 
 football-data.co.uk AH lines are home-perspective; canonical `BettingMarket.line` is the same home-side convention (explicit conversion tests required). Missing historical odds are never fabricated. Historical source odds must never be labelled Tippmix. Date-only rows must not get an invented UTC kickoff.
 
+AH coverage denominator is persisted historical match count, not quote-row count. Any-source coverage counts distinct matches once. Do not assume uniform AH coverage across leagues or seasons; choose a modelling/backtest window from measured coverage, not from a hardcoded “usable” threshold.
+
 ## When uncertain
 
 Stop and ask rather than inventing a settlement rule or leaking future information into a backtest.

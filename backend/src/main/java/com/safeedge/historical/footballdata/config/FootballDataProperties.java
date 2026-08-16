@@ -7,5 +7,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record FootballDataProperties(
 		@DefaultValue("https://www.football-data.co.uk") String baseUrl,
 		String manualLeague,
-		String manualSeasonStart) {
+		String manualSeasonStart,
+		String bulkStartSeason,
+		String bulkEndSeason,
+		String bulkLeagues) {
 }

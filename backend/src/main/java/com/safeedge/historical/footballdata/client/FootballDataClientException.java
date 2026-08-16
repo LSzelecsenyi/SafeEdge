@@ -3,6 +3,7 @@ package com.safeedge.historical.footballdata.client;
 public class FootballDataClientException extends RuntimeException {
 
 	public enum FailureType {
+		NOT_FOUND,
 		TRANSPORT,
 		INVALID_RESPONSE
 	}

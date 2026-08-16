@@ -41,11 +41,12 @@ public class RestClientFootballDataClient implements FootballDataClient {
 			throw ex;
 		}
 		catch (RestClientResponseException ex) {
-			log.warn("football-data.co.uk HTTP failure: path={} httpStatus={}", path, ex.getStatusCode().value());
-			throw new FootballDataClientException(
-					FootballDataClientException.FailureType.TRANSPORT,
-					"football-data.co.uk HTTP failure for " + path,
-					ex);
+			int status = ex.getStatusCode().value();
+			log.warn("football-data.co.uk HTTP failure: path={} httpStatus={}", path, status);
+			FootballDataClientException.FailureType type = status == 404
+					? FootballDataClientException.FailureType.NOT_FOUND
+					: FootballDataClientException.FailureType.TRANSPORT;
+			throw new FootballDataClientException(type, "football-data.co.uk HTTP failure for " + path, ex);
 		}
 		catch (ResourceAccessException ex) {
 			log.warn("football-data.co.uk transport failure: path={}", path);
