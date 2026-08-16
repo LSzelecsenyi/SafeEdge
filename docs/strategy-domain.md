@@ -28,7 +28,7 @@ Do not store display percents or `double`/`float` rates in this domain.
 
 ## Vault, Kelly, exposure, drawdown
 
-`vaultEnabled` and `vaultSweepRate` are configuration only. Vault is not active bankroll. Accounting, sweeps, and withdrawals are out of scope here.
+`vaultEnabled` and `vaultSweepRate` are configuration only. Vault is not active bankroll. Execution of sweeps, transfers, and balances lives in the bankroll accounting domain; see [bankroll-accounting.md](bankroll-accounting.md).
 
 `stakingMode` and `kellyFraction` / `flatStakeRate` are configuration only. Kelly mathematics (including Asian Handicap) is a later engine.
 

@@ -109,6 +109,16 @@ Vault is not active bankroll. Vault configuration (`vaultEnabled`, `vaultSweepRa
 
 Strategy percentages are configuration hypotheses, not hardcoded truths. Do not scatter those rates through engines, services, or UI as magic numbers.
 
+## Bankroll accounting
+
+Vault sweep uses only **new** cumulative realized profit above the profit high-water mark. Recovered old profit is not swept again. Vault OFF still advances that high-water mark so re-enabling Vault cannot retroactively sweep.
+
+Internal Active/Vault transfers are not betting P&L and must not create fake drawdown or fake recovery. Deposits and withdrawals are capital flows, not realized profit.
+
+There is no automatic Vault → Active rescue after losses. Vault → Active requires an explicit transfer.
+
+Financial arithmetic uses `BigDecimal`. Accounting and backtests must be deterministic: callers supply `occurredAt`; do not call `Instant.now()` inside accounting or backtest engines.
+
 ## When uncertain
 
 Stop and ask rather than inventing a settlement rule or leaking future information into a backtest.
