@@ -6,4 +6,5 @@ Architecture notes, Tippmix API discovery, and other project documentation live 
 - [Bankroll accounting](bankroll-accounting.md) — Active vs Vault, sweeps, high-water marks (not persisted yet)
 - [Backtest engine](backtest-engine.md) — chronological replay of prepared historical opportunities (pure, no persistence)
 - [Historical data import](historical-data-import.md) — football-data.co.uk Big 5 results, bulk import, and AH coverage audit (not Tippmix)
-- [Historical features](historical-features.md) — point-in-time pre-match features and score targets (no probability model yet)
+- [Historical features](historical-features.md) — point-in-time pre-match features and score targets
+- [Probability model v1](probability-model-v1.md) — time-decayed independent Poisson score distribution (baseline, not a strategy)

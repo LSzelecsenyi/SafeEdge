@@ -159,6 +159,8 @@ AH coverage denominator is persisted historical match count, not quote-row count
 
 Historical pre-match features may use only information strictly available before the match. The current or future result must never enter `PreMatchFeatures`. Date-only same-day matches must not leak into each other. Unavailable history is null, never a synthetic zero. Bookmaker odds are not football-performance features unless a later task explicitly designs that. Feature generation is deterministic.
 
+Probability models must be point-in-time safe: target and future scores never enter fitting, same-date date-only matches are excluded, and bookmaker odds are not baseline prediction features. The model output is a full score distribution that sums to 1. Insufficient history is an unavailable prediction, not a zero-probability grid. Evaluation and backtests must use chronological out-of-sample splits.
+
 ## When uncertain
 
 Stop and ask rather than inventing a settlement rule or leaking future information into a backtest.

@@ -1,6 +1,6 @@
 # Historical feature builder v1
 
-SafeEdge turns imported `historical_match` facts into modelling rows for a future Probability Model. This is **not** a predictive model. It does not produce `ScoreProbabilityDistribution`, candidates, or backtests.
+SafeEdge turns imported `historical_match` facts into modelling rows for a future Probability Model. Feature rows are not themselves predictions. Score probabilities are produced separately by [Probability Model v1](probability-model-v1.md), which reads match identity and targets only — not last5/last10 features.
 
 ```text
 historical_match facts

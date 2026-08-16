@@ -17,9 +17,9 @@ future football probability model
       StrategyEngine
 ```
 
-There is **no trained predictive model** in this layer. Tests supply synthetic point-in-time score distributions. Bookmaker odds are a price, not a probability estimate. An event's final score must never be used to build the distribution for that same event.
+There is **no trained predictive model** in this layer. Tests may supply synthetic distributions **or** a point-in-time `ScoreProbabilityDistribution` from [Probability Model v1](probability-model-v1.md). Bookmaker odds are a price, not a probability estimate. An event's final score must never be used to build the distribution for that same event.
 
-No `FootballProbabilityModel` interface is defined yet. The model output contract is `ScoreProbabilityDistribution`.
+The v1 football model is `PoissonFootballProbabilityModel`. CandidateEngine still only consumes `ScoreProbabilityDistribution`.
 
 ## Score distribution
 
@@ -93,8 +93,10 @@ The engine has no historical-only fields. It does not generate ids, read a clock
 
 ## What v1 does not do
 
-- Poisson, Dixon-Coles, Elo, xG, logistic regression, ML, or form heuristics
+- Dixon-Coles, Elo, xG, logistic regression, ML, or form heuristics inside CandidateEngine
 - `p = 1 / bookmaker odds` as a "model"
 - probabilities from `MatchResult` / final score / `SettlementResult`
 - StrategyConfig gates
 - persistence, REST, or Angular UI
+
+Score distributions may come from [Probability Model v1](probability-model-v1.md) (independent Poisson). CandidateEngine does not fit that model.
