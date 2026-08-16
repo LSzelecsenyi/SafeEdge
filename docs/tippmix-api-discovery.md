@@ -202,6 +202,84 @@ For one observed event:
 
 This is a verified identifier relationship **for that event**. Do not assume every event has a usable `betradarId`. Sportradar integration is out of scope.
 
+### Result list
+
+```http
+POST https://api.tippmix.hu/tippmix/result
+Content-Type: application/json;charset=UTF-8
+```
+
+This is the same class of internal/frontend API as the offer endpoints. It is **not** an official public developer API.
+
+Verified football request body (2026-08-16):
+
+```json
+{
+  "sportId": 1,
+  "competitionGroupId": 0,
+  "competitionId": 0,
+  "interval": 3,
+  "type": "date",
+  "market": 1,
+  "searchBy": ""
+}
+```
+
+The request contains **no explicit calendar date**, even though the Tippmix UI shows date filtering. The values `interval=3`, `type=date`, and `market=1` were observed to work. Their exact meaning is **not fully understood**. Do **not** treat this as a verified arbitrary historical-date query API.
+
+The call succeeded from ordinary PowerShell HTTP without browser automation. That does not prove authentication will never be required.
+
+Response structure:
+
+- `date`
+- `data[]`
+  - `date`
+  - `sportCompetitions[]`
+    - `sportId`
+    - `sportName`
+    - `competitionId`
+    - `competitionType`
+    - `competitionName`
+    - `events[]`
+- `_` (present; ignore)
+
+Observed result event fields used by SafeEdge:
+
+- `eventId`
+- `betradarId`
+- `eventName`
+- `eventDate`
+- `sportId`
+- `sportName`
+- `matchStatus`
+- `scoreResults[]`
+
+Other fields such as `eventParticipants`, `markets`, `winnerOutcomeName`, and `winnerOutcomeRealNo` may appear. They are **not** the SafeEdge settlement source of truth.
+
+Example verified event:
+
+- `eventId` = `5306177`
+- `betradarId` = `68306982`
+- `eventName` = `Grindavik - Throttur Reykjavik`
+- `matchStatus` = `ended`
+
+Observed full-time score:
+
+```text
+scoreTypeNo       = 1
+scoreTypeName     = FT
+scoreParticipant1 = 2.0
+scoreParticipant2 = 1.0
+isCancelled       = false
+```
+
+This is final score **2-1**. SafeEdge locates FT by `scoreTypeName == "FT"` (and `scoreTypeNo == 1` when present). Do **not** use HT or the first `scoreResults` entry as the final score.
+
+Identity:
+
+- Primary SafeEdge link: Tippmix `eventId` ↔ `betting_event.external_event_id` with `provider = TIPPMIX`
+- `betradarId` is a secondary consistency check only, and may be absent
+
 ---
 
 ## Inferred
@@ -212,6 +290,8 @@ This is a verified identifier relationship **for that event**. Do not assume eve
 - List `markets` is a summary subset; ungrouped `event.markets` is the offer used for a full read.
 - `betradarId` is a Sportradar match id when present.
 - Flag-like fields may mix JSON number (`isLive = 0`) and JSON boolean (`hasVisiblePrematchMarket = true`) in observed payloads.
+- Result `scoreParticipant1` / `scoreParticipant2` may arrive as JSON numbers such as `2.0`.
+- A later result observation for the same `eventId` may correct a previously stored final score.
 
 ---
 
@@ -224,7 +304,12 @@ This is a verified identifier relationship **for that event**. Do not assume eve
 - Rate limits, required headers, cookies, or geo restrictions in other environments.
 - Whether `compatibility=v1` is required forever, or what `v2` would change.
 - Full live-market catalog and whether live `marketSubType` values collide with pre-match ones.
-- Historical odds, results, or statistics endpoints (not discovered here).
+- Historical odds or statistics endpoints (not discovered here).
+- Exact semantics of result `interval`, `type`, and `market`.
+- Whether the result endpoint supports arbitrary historical calendar-date lookup.
+- How far back result data is retained.
+- Whether result corrections are published consistently for every sport.
+- Whether `winnerOutcomeName` / `winnerOutcomeRealNo` always match the FT score (possible later cross-check only).
 - Whether every event has `betradarId`, and whether it is unique across sports.
 - Pagination maximum `pageSize` and total-count accuracy.
 - Push / websocket offer updates (not verified).

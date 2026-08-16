@@ -1,0 +1,50 @@
+{
+  "date": "2026-08-16",
+  "data": [
+    {
+      "date": "2026-08-16",
+      "sportCompetitions": [
+        {
+          "sportId": 1,
+          "sportName": "Football",
+          "competitionId": 20,
+          "competitionType": 1,
+          "competitionName": "Iceland",
+          "events": [
+            {
+              "betradarId": 68306982,
+              "eventId": 5306177,
+              "eventName": "Grindavik - Throttur Reykjavik",
+              "eventDate": "2026-08-16T14:00:00+02:00",
+              "sportId": 1,
+              "sportName": "Football",
+              "matchStatus": "ended",
+              "scoreResults": [
+                {
+                  "scoreTypeNo": 2,
+                  "scoreTypeName": "HT",
+                  "scoreParticipant1": 1.0,
+                  "scoreParticipant2": 0.0,
+                  "isCancelled": false
+                },
+                {
+                  "scoreTypeNo": 1,
+                  "scoreTypeName": "FT",
+                  "scoreParticipant1": 2.0,
+                  "scoreParticipant2": 1.0,
+                  "isCancelled": false
+                }
+              ],
+              "winnerOutcomeName": "home",
+              "winnerOutcomeRealNo": 1,
+              "unexpectedField": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "_": {
+    "ignored": true
+  }
+}

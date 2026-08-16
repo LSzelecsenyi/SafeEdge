@@ -110,6 +110,24 @@ cd backend
 
 This starts one collection run at startup against the local database. It calls Tippmix.
 
+### Manual Tippmix result collection
+
+Keep `local` and add `manual-results` (do not omit `local`):
+
+```powershell
+cd backend
+.\gradlew.bat bootRun "-PspringProfiles=local,manual-results"
+```
+
+Unix:
+
+```bash
+cd backend
+./gradlew bootRun -PspringProfiles=local,manual-results
+```
+
+This starts one result collection run at startup. It calls Tippmix. There is no automatic result scheduler yet.
+
 ## DBeaver
 
 Connect after Compose is up. Tables appear after the backend has started once (Liquibase).

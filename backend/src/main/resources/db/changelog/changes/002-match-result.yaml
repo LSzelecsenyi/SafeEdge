@@ -1,0 +1,70 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-match-result
+      author: safeedge
+      comment: Normalized final football match results linked to betting events
+      changes:
+        - createTable:
+            tableName: match_result
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: provider
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_event_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: betradar_id
+                  type: BIGINT
+              - column:
+                  name: home_goals
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: away_goals
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: result_observed_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_match_result_event
+            baseTableName: match_result
+            baseColumnNames: event_id
+            referencedTableName: betting_event
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            tableName: match_result
+            constraintName: uk_match_result_event_id
+            columnNames: event_id

@@ -1,0 +1,9 @@
+{
+  "sportId": 1,
+  "competitionGroupId": 0,
+  "competitionId": 0,
+  "interval": 3,
+  "type": "date",
+  "market": 1,
+  "searchBy": ""
+}
