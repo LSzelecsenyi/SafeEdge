@@ -121,6 +121,16 @@ There is no automatic Vault → Active rescue after losses. Vault → Active req
 
 Financial arithmetic uses `BigDecimal`. Accounting and backtests must be deterministic: callers supply `occurredAt`; do not call `Instant.now()` inside accounting or backtest engines.
 
+## Strategy engine
+
+The Strategy Engine is pure and deterministic. It consumes `StrategyConfig` only, never `StrategyPreset`. Live recommendations and backtests must call the same engine.
+
+Asian Handicap Kelly must use the full five-outcome settlement probability distribution, not a binary win probability.
+
+Vault is excluded from the stake base. Drawdown reduction is applied after the max-stake cap. Exposure limits are hard caps.
+
+The engine must not mutate bankroll or exposure, must not sweep Vault, and must not place bets.
+
 ## When uncertain
 
 Stop and ask rather than inventing a settlement rule or leaking future information into a backtest.
