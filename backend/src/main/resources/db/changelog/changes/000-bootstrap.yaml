@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 000-bootstrap
+      author: safeedge
+      comment: Liquibase bootstrap. No business schema.
+      changes:
+        - tagDatabase:
+            tag: bootstrap

@@ -1,0 +1,60 @@
+---
+description: Angular standalone, Signals, RxJS, forms, time, and dashboard UI conventions
+alwaysApply: true
+---
+
+# SafeEdge — Angular UI
+
+Framework: Angular, standalone-first. Target: predictable, declarative, typed UI code.
+
+SafeEdge is an internal analysis dashboard, not a public-site / admin-site split. Later screens may include Dashboard, Events, Markets, Candidates, Odds History, and Backtests. Do not invent a CMS, public theme skins, or an admin/public dual app unless a task asks for it.
+
+## Components
+
+- All components are standalone. Do not use NgModules for feature wiring.
+- No inline templates or inline styles. Use separate `.html` and `.scss` files.
+- `ChangeDetectionStrategy.OnPush` on components.
+- Modern control flow only: `@if`, `@for`, `@switch`. Do not use `*ngIf`, `*ngFor`, `*ngSwitch` except when a third-party component requires it.
+- No heavy logic in templates (no sorting, filtering, mapping, or betting math in HTML). Use `computed()` or pipes.
+
+## State and async
+
+- Prefer Angular Signals for local UI state and `computed()` for derived state.
+- Comment `effect()` side effects.
+- Keep state component- or service-scoped. Do not introduce NgRx, Akita, Elf, SignalStore, or a custom global store unless explicitly requested.
+- RxJS for asynchronous/external streams. Convert to Signals in the UI layer with `toSignal()` or `async` when that is clearer.
+- Every non-HTTP subscription must be cleaned up with `takeUntilDestroyed()` or `DestroyRef`.
+- HTTP calls belong in services. Components orchestrate; services execute. No HTTP in templates or constructors.
+
+## Forms and typing
+
+- Prefer typed Reactive Forms.
+- Validation belongs in validators, not duplicated in templates.
+- No casual `any`. No `as unknown as` casts.
+- Do not display raw enum values in templates. Use a shared label mapping when enums are shown; do not invent per-enum pipes.
+
+## Time
+
+Frontend is not the authoritative source of business time.
+
+Do not compute "now", "today", kickoff remaining, snapshot age, closing-odds cutoff, or backtest windows in the browser except for purely visual formatting of values the backend already returned.
+
+Allowed: date pickers as explicit user input, rendering backend timestamps, passing user-selected dates to the API.
+
+Default business dates and "current time" come from the backend `Clock`.
+
+## Generated OpenAPI
+
+Do not hand-edit generated TypeScript clients/models. Change the spec or generator config and regenerate.
+
+## Lists and layout
+
+Fit tables/lists in the viewport. Prefer `table-layout: fixed` and ellipsis for overflow rather than horizontal scrolling.
+
+Reuse shared page chrome (list layout, table surface, headers) instead of copying shell styles between screens.
+
+Theming/tokens: see `ui-theming.mdc`.
+
+## When uncertain
+
+Stop and ask instead of copying a previous project's admin/public UI model.

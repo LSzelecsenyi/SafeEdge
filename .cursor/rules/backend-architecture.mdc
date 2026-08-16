@@ -1,0 +1,159 @@
+---
+description: SafeEdge backend layering, packages, mapping, time, and OpenAPI rules
+alwaysApply: true
+---
+
+# SafeEdge — Backend architecture
+
+SafeEdge is a **modular monolith**. Keep the architecture simple and explicit.
+
+Do not introduce microservices, event buses, CQRS, hexagonal ports/adapters ceremony, unnecessary interfaces, or speculative abstractions.
+
+Intended stack: Java, Spring Boot, Gradle, PostgreSQL, Liquibase, OpenAPI. Do not scaffold those projects unless the current task asks for it.
+
+## Layering
+
+Mandatory call chain:
+
+```text
+Controller
+    ↓
+Manager
+    ├── Service → Repository
+    └── Engine (pure domain calculation)
+```
+
+- No layer skipping (Controller must not call Service, Repository, or Engine directly).
+- No upward calls.
+- Services must not call other Services. Cross-service workflows belong in Managers.
+- Managers MAY call other Managers when a use-case requires it.
+- Managers MAY call domain engines. Services and Repositories must not.
+
+### Controller
+
+HTTP/API adapter only: request parsing, response mapping, status codes, headers, validation boundary.
+
+Not allowed: repository access, betting calculations, orchestration, persistence logic.
+
+When OpenAPI-generated controller interfaces exist, implement them and keep controllers as `@Override` delegates to Managers. Until that contract exists, still keep controllers thin.
+
+Pagination is an HTTP concern. Do not construct `Pageable` in Managers, Services, or Repositories.
+
+### Manager
+
+Application/business orchestration.
+
+Examples: candidate analysis workflow, odds ingestion coordination, event synchronization, backtest execution coordination.
+
+Managers coordinate Services, other Managers when justified, mappers, and domain engines.
+
+Managers must not access repositories directly.
+
+### Service
+
+Persistence-facing application operations. Services may use repositories.
+
+Do not put HTTP concerns, DTO mapping, or betting mathematics here.
+
+### Repository
+
+Persistence only. No business decisions and no betting calculations.
+
+### Domain engines
+
+Pure calculation / domain decision types. Prefer names such as `ProbabilityEstimator`, `ExpectedValueCalculator`, `CandidateScorer`, `SettlementEngine`, `AsianHandicapSettlementEngine`, `BacktestEngine`.
+
+Engines should be:
+
+- deterministic
+- side-effect free
+- independent from HTTP
+- independent from persistence
+- independent from Tippmix DTOs
+- easily unit-testable
+
+Do not hide betting mathematics inside generic Services. See `betting-domain.mdc`.
+
+## Feature-first packages
+
+Organize by feature/domain, not by a global `controller/` / `service/` / `repository/` split.
+
+Target direction under `com.safeedge`:
+
+```text
+tippmix/     client, dto, mapper
+event/       api, manager, service, repository, domain
+odds/        api, manager, service, repository, domain
+candidate/   api, manager, engine, domain
+backtest/    api, manager, engine, domain
+result/      api, manager, service, repository, domain
+```
+
+This is a direction. Do not create empty package forests in advance.
+
+Shared infrastructure (`config`, time, error handling) may live outside feature packages. Do not place business logic there.
+
+## Mapping
+
+Prefer explicit/manual mapper classes where it improves clarity.
+
+Do not introduce MapStruct, reflection-heavy mapping, or other automatic mapping frameworks without a concrete, stated reason.
+
+Keep mappings visible at important boundaries:
+
+- Tippmix DTO → internal domain
+- domain → API DTO
+- persistence entity ↔ domain
+
+Mappers are field-to-field / structural conversions. No betting math, no validation policy, no orchestration.
+
+Do not duplicate the same mapping in unrelated components.
+
+API DTOs should use stable public identifiers (prefer `uuid`). Do not leak internal database IDs into API contracts unless a task explicitly requires it.
+
+## Persistence
+
+- PostgreSQL with Liquibase for schema changes.
+- Primary keys: `BIGINT` / Java `Long`. Do not use `int` / `Integer` as entity PKs.
+- Persist enums with `@Enumerated(EnumType.STRING)`. `EnumType.ORDINAL` is forbidden.
+- Timestamp columns: `TIMESTAMPTZ`. Never `TIMESTAMP` without time zone for absolute timestamps.
+
+## Time handling
+
+- **Timestamps** (createdAt, observedAt, kickoff Instant, snapshot time, backtest cutoff) use `java.time.Instant` in domain/persistence.
+- **Calendar dates** (event date without time) use `java.time.LocalDate`.
+- Do not use `LocalDateTime` as a persisted timestamp type.
+- Production clock: `Clock.systemUTC()`.
+- Any class whose behavior depends on "now" must take an injected `Clock`.
+- In test-sensitive and domain logic, do not call uncontrolled `Instant.now()`, `LocalDateTime.now()`, or `OffsetDateTime.now()`.
+- Convert at the API boundary with explicit `ZoneOffset.UTC`.
+- Frontend must not be the source of business time. See `ui-rules.mdc`.
+
+This matters for event kickoff, pre-match eligibility, odds snapshot age, closing odds, and backtest cutoffs.
+
+## Generated OpenAPI code
+
+Never hand-edit generated Java or TypeScript clients/models.
+
+If a generated type is wrong: change the OpenAPI spec or generator config, then regenerate.
+
+Generated artifacts must live in clearly generated locations, separate from handwritten code.
+
+## Lombok
+
+Allowed for DTOs and simple data classes: `@Getter` / `@Setter`, `@Builder`, `@RequiredArgsConstructor`, `@EqualsAndHashCode`, `@ToString`.
+
+Do not use `@Data` on JPA entities. Entity `equals` / `hashCode` must be deliberate.
+
+## Errors
+
+When API error handling is introduced:
+
+- Validation failures: HTTP 400 with a validation error code and field errors.
+- Not-found / conflict / gone: the corresponding HTTP status, without pretending they are field-validation errors.
+
+Do not invent a parallel error model per feature.
+
+## When uncertain
+
+Stop and ask instead of inventing architecture.

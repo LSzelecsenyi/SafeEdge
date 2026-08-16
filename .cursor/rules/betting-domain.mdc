@@ -1,0 +1,100 @@
+---
+description: Odds snapshots, canonical betting math, settlement, and backtest guardrails
+alwaysApply: true
+---
+
+# SafeEdge — Betting domain
+
+SafeEdge analyzes and backtests sports bets. It does not place bets. Do not add automated wagering, bet-submission, or bookmaker-account trading unless a task explicitly asks for it.
+
+## Odds snapshots are immutable observations
+
+An odds snapshot is one observation at one time:
+
+```text
+14:00 -> 1.25
+15:00 -> 1.23
+16:00 -> 1.21
+```
+
+These are three rows, not one row updated three times.
+
+Never overwrite historical odds merely because a newer price was observed.
+
+Avoid conceptually equivalent updates:
+
+```sql
+UPDATE odds_snapshot SET odds = :latestOdds
+```
+
+Preserve:
+
+- the observed price
+- the observation timestamp
+- enough identity to know which event/market/selection it belongs to
+
+Use backend timestamps and UTC. Observation time is business data, not a UI concern.
+
+Closing odds, snapshot age, and pre-match eligibility must be derived from this history, not from a single mutable "current odds" field that destroys the past.
+
+## Canonical betting mathematics
+
+Betting calculations must have one canonical implementation and be reused.
+
+Do not duplicate formulas in Controllers, Managers, Services, UI mapping, or ad-hoc helpers.
+
+Canonicalize at least:
+
+- implied probability
+- expected value
+- expected ROI
+- payout
+- net profit
+- push handling
+- Asian handicap settlement
+- partial win
+- partial loss
+
+Put these in domain engines, not in generic Services.
+
+The same settlement implementation must be reusable by:
+
+- backtesting
+- candidate evaluation
+- theoretical / manual bet analysis
+
+Asian Handicap must not be approximated with generic win/loss logic. Quarter-line and half-line results (win, half-win, push, half-loss, loss) need an explicit settlement engine.
+
+Engines must be deterministic and independent from Tippmix DTOs, HTTP, and persistence. See `backend-architecture.mdc`.
+
+## Backtesting
+
+Backtests must be reproducible.
+
+Given the same dataset, strategy version, model version, parameters, and seed (when applicable), the same result must be produced.
+
+Avoid uncontrolled randomness, current-time dependencies, and mutable external state.
+
+Do not optimize and evaluate on the same dataset. Respect:
+
+- training period
+- validation period
+- final test period
+
+Always watch for:
+
+- look-ahead bias (using information that would not have been known at decision time)
+- data leakage
+- survivorship bias
+- selection bias
+- overfitting
+
+A decision at time `T` may use only data whose timestamps are `<= T` (and that would actually have been available then, including odds snapshot time).
+
+Closing odds, kickoff, and cutoff rules must be explicit. Do not silently use "latest known odds" if those odds arrived after the decision point.
+
+If a backtest metric changes unexpectedly, investigate why. Do not "fix" it by updating expected test values. See `testing.mdc`.
+
+## When uncertain
+
+Stop and ask rather than inventing a settlement rule or leaking future information into a backtest.

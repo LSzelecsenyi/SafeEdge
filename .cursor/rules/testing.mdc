@@ -1,0 +1,85 @@
+---
+description: Unit, integration, fixture, Testcontainers, and test-repair rules for SafeEdge
+alwaysApply: true
+---
+
+# SafeEdge — Testing
+
+## Unit tests
+
+Best suited for betting mathematics, settlement, probability, domain engines, mappers, and validators.
+
+Prefer pure tests without Spring when Spring is unnecessary.
+
+- Domain engines: construct directly, no `@SpringBootTest`.
+- Collaborators: Mockito (`@ExtendWith(MockitoExtension.class)`).
+- Time-dependent logic: inject `Clock` and use `Clock.fixed(...)`.
+- If a mutable clock is used, reset it in `@BeforeEach` so tests do not leak time.
+
+Existence checks that hit persistence-facing services should use batch lookups (no N+1). Verify the batch call, not a per-id loop.
+
+## Integration tests
+
+Use them for persistence, Liquibase migrations, API behavior, integration wiring, and ingestion flows.
+
+Prefer Testcontainers PostgreSQL over fake database behavior when PostgreSQL-specific semantics matter (types, constraints, `TIMESTAMPTZ`, queries).
+
+Do not enable Testcontainers reuse (no `.withReuse(true)`, no global `testcontainers.reuse.enable`).
+
+### API-focused tests
+
+Prefer arranging state through application/public interfaces (HTTP) where practical.
+
+If HTTP test helpers/drivers are used:
+
+- Treat HTTP status as the source of truth for success (`2xx`), not `dto != null`.
+- Do not fabricate error bodies when parsing fails; keep the raw response.
+- Assert `errorCode` (or equivalent stable code), not full message text.
+- Do not hide assertions inside drivers.
+
+Jackson JavaTime setup belongs in shared application config, not ad-hoc per-test module registration.
+
+Timestamp assertions: compare `Instant` values. Do not compare `OffsetDateTime` by timezone-sensitive equality, and do not use `LocalDateTime.now()` / `OffsetDateTime.now()` in tests.
+
+### Data-heavy / backtest tests
+
+Do **not** require thousands of historical records to be created through REST calls.
+
+Controlled fixture loaders or test dataset import is acceptable for:
+
+- historical event datasets
+- odds histories
+- backtest fixtures
+
+Keep those fixtures explicit, versioned, and deterministic. Prefer committed test datasets over hidden live API pulls.
+
+## Test repair
+
+Do not assume production code is wrong merely because a test fails.
+
+Do not revert, weaken, or distort intentional production behavior just to satisfy an outdated test.
+
+Do not reduce assertion strength (no "just assert non-null", no accepting multiple outcomes when one is correct, no deleting tests without explanation).
+
+If production behavior was intentionally changed and that change is supported by current contracts or decisions, update the test to verify the **new** intended behavior while keeping equivalent coverage.
+
+If it is unclear whether the test or the production code is wrong, stop and ask.
+
+### Backtest / statistical results
+
+If a statistical or backtest result changes, **do not** automatically replace expected values because the implementation now produces different numbers.
+
+First determine **why** the result changed:
+
+- look-ahead / leakage
+- settlement rule change
+- timestamp/cutoff change
+- fixture drift
+- genuine bug
+- intentional, documented model/strategy change
+
+A test or implementation change must not silently alter historical expected results. Investigate unexpected metric changes before touching expected values.
+
+## When uncertain
+
+Stop and ask instead of weakening tests or inventing a shortcut around business logic.

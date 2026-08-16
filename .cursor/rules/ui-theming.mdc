@@ -1,0 +1,42 @@
+---
+description: Layout in components, visual identity in CSS tokens; keep theming simple
+alwaysApply: true
+---
+
+# SafeEdge — UI theming
+
+Keep theming simple. SafeEdge does not need a multi-theme, multi-brand, or public/admin skin system initially. Do not build a full design system yet.
+
+## Split of concerns
+
+- **Component styles**: layout and structure (flex/grid, spacing, alignment, breakpoints, stacking).
+- **Theme / tokens**: visual identity (color, gradient, shadow, radius, typography, reusable control skins).
+
+Use CSS custom properties for reusable visual values. Do not spread hardcoded colors, shadows, radii, or fonts across many components.
+
+```scss
+// layout in the component
+.candidate-list {
+  display: grid;
+  gap: var(--se-space-md);
+}
+
+// visual value from a token
+.candidate-ev {
+  color: var(--se-color-positive);
+}
+```
+
+If a value is unclear (layout vs theme), put the visual part in a token.
+
+## Reuse
+
+Shared chrome (page shell, table surface, cards, buttons) should use tokens and shared classes, not per-screen copy-paste.
+
+If a new color or radius is needed, add a token in the central theme stylesheet rather than hardcoding it in one component.
+
+Light/dark can be added later via tokens. Do not invent a route-based multi-theme architecture now.
+
+## When uncertain
+
+Stop and ask instead of creating a second theme framework.

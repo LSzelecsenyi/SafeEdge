@@ -1,0 +1,6 @@
+# Local development profile. Activate with SPRING_PROFILES_ACTIVE=local.
+# Override credentials via environment variables; do not commit secrets.
+spring:
+  datasource:
+    username: ${DB_USERNAME:safeedge}
+    password: ${DB_PASSWORD:safeedge}

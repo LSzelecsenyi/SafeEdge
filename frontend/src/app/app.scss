@@ -1,0 +1,21 @@
+:host {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.shell {
+  display: grid;
+  gap: var(--se-space-md);
+  text-align: center;
+}
+
+.title,
+.subtitle {
+  margin: 0;
+}
+
+.subtitle {
+  color: var(--se-color-muted);
+}
