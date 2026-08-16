@@ -1,0 +1,74 @@
+{
+  "events": [
+    {
+      "eventId": 5311343,
+      "betradarId": 72409632,
+      "eventDate": "2026-08-16T14:00:00+02:00",
+      "eventName": "Djurgarden - AIK Stockholm",
+      "eventParticipants": [
+        {
+          "participantId": 101,
+          "participantName": "Djurgarden"
+        },
+        {
+          "participantId": 102,
+          "participantName": "AIK Stockholm"
+        }
+      ],
+      "competitionGroupId": 10,
+      "competitionGroupRefId": 11,
+      "competitionGroupName": "Sweden",
+      "competitionId": 20,
+      "competitionRefId": 21,
+      "competitionName": "Allsvenskan",
+      "sportId": 1,
+      "sportName": "Football",
+      "isLive": 0,
+      "isOutright": 0,
+      "hasVisibleLiveMarket": false,
+      "hasVisiblePrematchMarket": true,
+      "remainingLiveMarketCount": 0,
+      "remainingPrematchMarketCount": 87,
+      "totalMarketCount": 87,
+      "bettingPhase": 1,
+      "bettingStatus": 1,
+      "eventVersion": 5,
+      "unexpectedNewField": {
+        "nested": true
+      },
+      "markets": [
+        {
+          "marketId": 9001,
+          "marketName": "1X2",
+          "marketRealNo": 1,
+          "marketStatus": 1,
+          "marketType": 1,
+          "marketSubType": 1,
+          "marketTypePriority": 1,
+          "marketVersion": 1,
+          "mainMarket": true,
+          "outcomeCount": 3,
+          "specialOddsValue": null,
+          "marketGroupIds": [1],
+          "outcomes": [
+            {
+              "outcomeNo": 1,
+              "outcomeName": "home",
+              "outcomeRealNo": 1,
+              "fixedOdds": 2.10,
+              "outcomeResult": null,
+              "isCustomBet": false,
+              "unexpectedOutcomeField": "ignore-me"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "totalCount": 1,
+    "pageCount": 1,
+    "currentPage": 1,
+    "pageSize": 20
+  }
+}

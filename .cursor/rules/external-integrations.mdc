@@ -1,58 +1,95 @@
 ---
-description: Isolate Tippmix and other external APIs from SafeEdge domain code
+description: Isolate external data providers from SafeEdge domain code
 alwaysApply: true
 ---
 
 # SafeEdge — External integrations
 
-External bookmaker/front-end APIs are unstable. Isolate them behind an integration boundary.
+SafeEdge may ingest data from multiple external providers. Each provider is a source system, not the domain model.
 
-Tippmix is a private/unstable frontend API. Treat it as a source system, not as the domain model.
+Assume external integrations are unstable unless they are explicitly backed by a supported public contract.
+
+Possible providers include a current-odds bookmaker frontend API, a commercial odds API, a football statistics API, a historical odds dataset, or a results provider. Do not assume they expose the same capabilities.
 
 ## Required boundary
 
 ```text
-Tippmix HTTP API
+External provider
       ↓
-TippmixClient
+Provider-specific client
       ↓
-Tippmix DTOs
+Provider-specific DTOs
       ↓
-Tippmix mapper / normalizer
+Provider-specific mapper / normalizer
       ↓
 SafeEdge internal domain
 ```
 
-## Isolation rules
+Example: Tippmix is one possible current-odds provider. It may be an unofficial/internal frontend API, so treat it as unstable and isolate it behind an adapter. Tippmix DTOs do not define the SafeEdge domain.
 
-- Tippmix DTOs, field names, payload shapes, and client types stay inside the Tippmix integration area (`tippmix/` or equivalent).
-- Internal domain code must not depend on Tippmix response classes.
-- Persistence entities must not depend directly on Tippmix DTOs.
-- Candidate analysis, scoring, settlement, and backtests must not operate on Tippmix DTOs.
-- Tippmix field names must not leak through Managers, engines, API DTOs, or the frontend.
-- Market names or source market IDs must not be hardcoded in unrelated business logic. Map them to internal market types in the integration layer.
-- Parsing, coercion, null-handling, and normalization belong in the integration layer.
+## Isolation
 
-The same boundary applies to any future external odds/event source: client → source DTOs → mapper → internal domain.
+- Provider DTOs, field names, payload shapes, IDs, and client types stay inside that provider's integration area (for example `tippmix/` or `statsapi/`).
+- Internal domain code must not depend on provider response classes.
+- Persistence entities must not depend directly on provider DTOs.
+- Candidate analysis, scoring, settlement, and backtests must operate on SafeEdge internal models, not external response structures.
+- Provider field names, market names, source IDs, and quirks must not leak through Managers, engines, API DTOs, or the frontend.
+- Parsing, coercion, null-handling, and normalization belong in the provider adapter.
+
+HTTP and other outbound I/O for a provider live only in that provider's client. Domain engines and repositories must not perform outbound provider calls. Do not scatter URL fragments, headers, cookies, or parsing details across the codebase.
+
+Do not generate or implement a provider client unless the current task asks for it.
+
+## Capabilities
+
+Do not introduce one universal interface that assumes every provider can do everything.
+
+Different providers may support different capabilities, for example current events, current odds, historical odds, results, competition metadata, statistics, lineups, or injuries.
+
+Prefer capability-oriented abstractions (`OddsProvider`, `ResultsProvider`, `HistoricalOddsProvider`, `StatisticsProvider`, and similar) only when a real implementation needs them. Do not create those types speculatively.
+
+## Internal identity
+
+SafeEdge should eventually own its own identifiers. Provider IDs are external references, not internal primary identity.
+
+```text
+SafeEdgeEventId
+    ↕
+ProviderEventReference(provider, externalId)
+```
+
+The same idea applies to competitions, markets, selections, and teams when needed. Do not design a complete identity-resolution system until a task requires it.
+
+## Market normalization
+
+Provider-specific market representation must be normalized before betting logic uses it.
+
+External sources may represent the same idea (`+1.5` handicap, Asian Handicap `+1.0` / `+0.75`, double chance, over/under) with different IDs, names, codes, nested fields, or line values.
+
+SafeEdge betting logic must not identify markets through arbitrary provider display strings scattered through the application. Normalization belongs at the integration/domain boundary.
+
+## Time and odds observations
+
+External timestamps must be normalized into SafeEdge's UTC-based time model.
+
+Odds received from a provider are observations at a particular time. They are not timeless mutable properties. See `betting-domain.mdc`.
 
 ## Payload preservation
 
-Because the source API may change, preserving the raw source payload is allowed and often useful for:
-
-- ingestion diagnostics
-- mapper debugging
-- reproducing a parse failure
-- comparing source vs normalized data
+Preserving a raw provider response is allowed when useful for diagnostics, auditing, debugging, mapper failures, or reprocessing.
 
 Raw payloads are evidence, not a substitute for a normalized domain model. Downstream logic must read internal types, not JSON blobs.
 
-## Client rules
+## Failure handling
 
-- HTTP calls to Tippmix live only in the Tippmix client.
-- Domain engines and repositories must not perform outbound HTTP.
-- Do not scatter URL fragments, headers, cookies, or scraping/parsing details across the codebase.
-- Do not generate or implement `TippmixClient` unless the current task asks for it.
+- Distinguish transport/connectivity errors from invalid provider data.
+- Validate required response structure before normalization.
+- Log enough provider context to diagnose ingestion failures.
+- Never silently invent missing values.
+- Never substitute a different market or selection because provider data is malformed.
+- Tolerate additive unknown fields where practical.
+- Integration failures must not silently corrupt or partially overwrite previously stored historical data.
 
 ## When uncertain
 
-If a Tippmix field cannot be mapped cleanly to the internal model, stop and ask instead of leaking the source shape inward.
+If a provider field cannot be mapped cleanly to the internal model, stop and ask instead of leaking the source shape inward.

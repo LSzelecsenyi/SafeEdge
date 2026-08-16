@@ -1,0 +1,115 @@
+{
+  "event": {
+    "eventId": 5311343,
+    "betradarId": 72409632,
+    "eventDate": "2026-08-16T14:00:00+02:00",
+    "eventName": "Djurgarden - AIK Stockholm",
+    "eventParticipants": [
+      {
+        "participantId": 101,
+        "participantName": "Djurgarden"
+      },
+      {
+        "participantId": 102,
+        "participantName": "AIK Stockholm"
+      }
+    ],
+    "competitionGroupId": 10,
+    "competitionGroupName": "Sweden",
+    "competitionId": 20,
+    "competitionName": "Allsvenskan",
+    "sportId": 1,
+    "sportName": "Football",
+    "isLive": 0,
+    "isOutright": 0,
+    "hasVisibleLiveMarket": false,
+    "hasVisiblePrematchMarket": true,
+    "remainingLiveMarketCount": 0,
+    "remainingPrematchMarketCount": 87,
+    "totalMarketCount": 87,
+    "bettingPhase": 1,
+    "bettingStatus": 1,
+    "eventVersion": 5,
+    "markets": [
+      {
+        "marketId": 8001,
+        "marketName": "Ázsiai Hendikep -1",
+        "marketRealNo": 10,
+        "marketStatus": 1,
+        "marketType": 2,
+        "marketSubType": 96,
+        "marketTypePriority": 2,
+        "marketVersion": 3,
+        "mainMarket": false,
+        "outcomeCount": 2,
+        "specialOddsValue": "-1",
+        "marketGroupIds": [5, 6017],
+        "outcomes": [
+          {
+            "outcomeNo": 1,
+            "outcomeName": "Djurgarden -1",
+            "outcomeRealNo": 1,
+            "fixedOdds": 1.57,
+            "outcomeResult": null,
+            "isCustomBet": false
+          },
+          {
+            "outcomeNo": 2,
+            "outcomeName": "AIK Stockholm +1",
+            "outcomeRealNo": 2,
+            "fixedOdds": 2.12,
+            "outcomeResult": null,
+            "isCustomBet": false
+          }
+        ]
+      },
+      {
+        "marketId": 8002,
+        "marketName": "Ázsiai Hendikep -1,25",
+        "marketRealNo": 11,
+        "marketStatus": 1,
+        "marketType": 2,
+        "marketSubType": 96,
+        "marketTypePriority": 2,
+        "marketVersion": 3,
+        "mainMarket": false,
+        "outcomeCount": 2,
+        "specialOddsValue": "-1.25",
+        "marketGroupIds": [5, 6017],
+        "outcomes": [
+          {
+            "outcomeNo": 1,
+            "outcomeName": "Djurgarden -1,25",
+            "outcomeRealNo": 1,
+            "fixedOdds": 1.80,
+            "outcomeResult": null,
+            "isCustomBet": false
+          },
+          {
+            "outcomeNo": 2,
+            "outcomeName": "AIK Stockholm +1,25",
+            "outcomeRealNo": 2,
+            "fixedOdds": 1.90,
+            "outcomeResult": null,
+            "isCustomBet": false
+          }
+        ]
+      }
+    ],
+    "marketGroups": [
+      {
+        "type": "all"
+      },
+      {
+        "type": "group",
+        "id": 5,
+        "name": "Hendikep"
+      },
+      {
+        "type": "group",
+        "id": 6017,
+        "name": "Ázsiai"
+      }
+    ]
+  }
+}

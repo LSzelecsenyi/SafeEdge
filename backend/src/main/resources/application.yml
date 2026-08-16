@@ -27,3 +27,8 @@ management:
   endpoint:
     health:
       show-details: never
+
+safeedge:
+  providers:
+    tippmix:
+      base-url: ${TIPPMIX_BASE_URL:https://api.tippmix.hu}

@@ -1,0 +1,14 @@
+{
+  "search": "",
+  "sportId": 1,
+  "competitionGroupId": null,
+  "competitionOrAliasId": null,
+  "eventTypes": [],
+  "marketTypes": [],
+  "maxDate": null,
+  "maxOdds": null,
+  "minDate": null,
+  "minOdds": null,
+  "page": 1,
+  "pageSize": 20
+}
