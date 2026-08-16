@@ -38,3 +38,6 @@ safeedge:
         fixed-delay: ${TIPPMIX_COLLECTOR_FIXED_DELAY:PT5M}
         page-size: ${TIPPMIX_COLLECTOR_PAGE_SIZE:20}
         max-pages: ${TIPPMIX_COLLECTOR_MAX_PAGES:50}
+      results:
+        enabled: ${TIPPMIX_RESULTS_ENABLED:false}
+        fixed-delay: ${TIPPMIX_RESULTS_FIXED_DELAY:PT15M}

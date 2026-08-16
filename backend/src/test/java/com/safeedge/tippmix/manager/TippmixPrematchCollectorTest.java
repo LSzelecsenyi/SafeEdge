@@ -241,7 +241,8 @@ class TippmixPrematchCollectorTest {
 		return new TippmixProperties(
 				"https://api.tippmix.hu",
 				null,
-				new TippmixProperties.Collector(false, Duration.ofMinutes(5), 20, 50));
+				new TippmixProperties.Collector(false, Duration.ofMinutes(5), 20, 50),
+				new TippmixProperties.Results(false, Duration.ofMinutes(15)));
 	}
 
 	private static TippmixEventDto eligible(long eventId) {

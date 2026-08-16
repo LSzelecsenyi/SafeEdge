@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -32,6 +33,7 @@ public class TippmixResultIngestionManager {
 	private final TippmixResultNormalizer normalizer;
 	private final MatchResultPersistenceService persistenceService;
 	private final Clock clock;
+	private final AtomicBoolean inProgress = new AtomicBoolean(false);
 
 	public TippmixResultIngestionManager(
 			TippmixResultClient resultClient,
@@ -45,6 +47,20 @@ public class TippmixResultIngestionManager {
 	}
 
 	public ResultCollectionRunResult collectResults() {
+		if (!inProgress.compareAndSet(false, true)) {
+			Instant now = clock.instant();
+			log.warn("Tippmix result collection already in progress; skipping this trigger");
+			return new ResultCollectionRunResult(0, 0, 0, 0, 0, 0, 0, 0, now, List.of());
+		}
+		try {
+			return run();
+		}
+		finally {
+			inProgress.set(false);
+		}
+	}
+
+	private ResultCollectionRunResult run() {
 		Instant observedAt = clock.instant();
 		TippmixResultResponse response = resultClient.fetchResults(TippmixResultRequest.verifiedFootballResults());
 		int received = 0;

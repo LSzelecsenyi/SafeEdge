@@ -8,12 +8,18 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 public record TippmixProperties(
 		@DefaultValue("https://api.tippmix.hu") String baseUrl,
 		String manualEventId,
-		@DefaultValue Collector collector) {
+		@DefaultValue Collector collector,
+		@DefaultValue Results results) {
 
 	public record Collector(
 			@DefaultValue("false") boolean enabled,
 			@DefaultValue("PT5M") Duration fixedDelay,
 			@DefaultValue("20") int pageSize,
 			@DefaultValue("50") int maxPages) {
+	}
+
+	public record Results(
+			@DefaultValue("false") boolean enabled,
+			@DefaultValue("PT15M") Duration fixedDelay) {
 	}
 }

@@ -81,6 +81,13 @@ cd backend
 
 The log should show `The following 1 profile is active: "local"` and connect to `jdbc:postgresql://localhost:5433/safeedge`.
 
+With the `local` profile, both background collectors are enabled independently:
+
+- pre-match offer/odds collection (existing interval)
+- finished-match result collection (`PT15M` fixed delay, first run after 15 minutes)
+
+They accumulate odds snapshots and known finished-match results. They do not call each other, and they do not place bets.
+
 Automated tests:
 
 ```powershell
@@ -126,7 +133,9 @@ cd backend
 ./gradlew bootRun -PspringProfiles=local,manual-results
 ```
 
-This starts one result collection run at startup. It calls Tippmix. There is no automatic result scheduler yet.
+This starts one result collection run at startup. It calls Tippmix. Use this when you want an immediate one-off result fetch instead of waiting for the 15-minute local scheduler.
+
+`-PspringProfiles` replaces the default `bootRun` profile list, so `local` must be included.
 
 ## DBeaver
 
