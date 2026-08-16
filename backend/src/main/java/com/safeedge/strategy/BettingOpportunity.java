@@ -6,6 +6,11 @@ import java.time.LocalDate;
 /**
  * Already-evaluated betting opportunity. Edge and probabilities are upstream
  * inputs; this type does not compute them.
+ *
+ * {@code edge} is the modelled expected net return per unit stake
+ * ({@code Σ p_i R_i}). CandidateEngine sets it from the score distribution and
+ * observed odds. It may be negative. It is not {@code 1/odds} and not a
+ * probability-point difference.
  */
 public record BettingOpportunity(
 		String opportunityId,
@@ -26,8 +31,8 @@ public record BettingOpportunity(
 		if (odds == null || odds.compareTo(BigDecimal.ONE) <= 0) {
 			throw new StrategyException("odds must be greater than 1");
 		}
-		if (edge == null || edge.compareTo(BigDecimal.ZERO) < 0 || edge.compareTo(BigDecimal.ONE) > 0) {
-			throw new StrategyException("edge must be >= 0 and <= 1");
+		if (edge == null) {
+			throw new StrategyException("edge is required");
 		}
 		if (settlementProbabilities == null) {
 			throw new StrategyException("settlementProbabilities is required");

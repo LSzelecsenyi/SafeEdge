@@ -141,6 +141,14 @@ Vault is excluded from the stake base. Drawdown reduction is applied after the m
 
 The engine must not mutate bankroll or exposure, must not sweep Vault, and must not place bets.
 
+## Candidate engine
+
+CandidateEngine evaluates value from a point-in-time `ScoreProbabilityDistribution` and observed odds. It does not apply `StrategyConfig` gates. StrategyEngine decides risk and stake.
+
+Asian Handicap candidate EV must use the full five-outcome settlement distribution produced by `SettlementEngine` on each scoreline. Do not treat `1 / odds` as a predictive model or as AH break-even probability.
+
+Scoreline probabilities must be estimates that would have been known at decision time. Do not derive them from that event's final score, `MatchResult`, or `SettlementResult`, and do not fabricate them from bookmaker odds.
+
 ## When uncertain
 
 Stop and ask rather than inventing a settlement rule or leaking future information into a backtest.

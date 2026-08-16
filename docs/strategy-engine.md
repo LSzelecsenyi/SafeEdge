@@ -7,19 +7,19 @@ StrategyConfig + BettingOpportunity + BankrollState + PortfolioExposure
         ↓
   StrategyEngine
         ↓
-  StrategyDecision
+    StrategyDecision
 ```
 
 Live recommendations and backtests must call this same engine. There is no preset-specific engine. `StrategyEngine` consumes `StrategyConfig` only.
 
 ## Inputs
 
-- **edge** is an upstream decimal fraction (3% → `0.03`). Exact candidate-edge calculation belongs to a future Opportunity/Candidate Engine. This engine only checks `edge >= minimumEdge`.
-- **SettlementProbabilityDistribution** is the five-outcome mass for WIN / HALF_WIN / PUSH / HALF_LOSS / LOSS. Probabilities must each lie in `[0, 1]` and **sum to 1**. They are not silently normalized.
+- **edge** is expected net return per unit stake (`Σ p_i R_i`, 3% → `0.03`). [CandidateEngine](candidate-engine.md) computes it from a point-in-time score distribution and observed odds. This engine only checks `edge >= minimumEdge`. `minimumEdge = 0.03` means: require at least +3% modelled expected net return per unit stake. Edge may be negative; it is not `1/odds` and not a probability-point difference.
+- **SettlementProbabilityDistribution** is the five-outcome mass for WIN / HALF_WIN / PUSH / HALF_LOSS / LOSS. Probabilities must each lie in `[0, 1]` and **sum to 1**. They are not silently normalized. CandidateEngine derives this by calling `SettlementEngine` on each scoreline.
 - **PortfolioExposure** is current committed stake **amounts** (not rates). If current exposure already exceeds the configured limit, remaining capacity is zero; the exposure object is still valid.
 - Stake base is `BankrollState.activeBankroll()`. Vault is never part of the stake base.
 
-Invalid odds (`<= 1`) or invalid edge (`< 0` or `> 1`) are domain input errors, not normal rejections.
+Invalid odds (`<= 1`) are domain input errors, not normal rejections.
 
 ## Generalized Kelly
 
@@ -37,7 +37,7 @@ Full Kelly maximizes `G(f) = Σ p_i ln(1 + f R_i)` by solving `G'(f) = Σ p_i R_
 
 If `G'(0) <= 0` (expected return per unit stake), full Kelly is `0`. The engine never returns `f = 1`.
 
-`expectedReturnRate` is `Σ p_i R_i`. It is not `edge`.
+`expectedReturnRate` is `Σ p_i R_i`. When the opportunity was produced by CandidateEngine, `BettingOpportunity.edge` is that same value. StrategyEngine still computes expected return from the settlement distribution for Kelly; it does not trust a second independent formula.
 
 ## Stake order
 

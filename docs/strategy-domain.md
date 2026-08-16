@@ -2,7 +2,7 @@
 
 SafeEdge stores staking and risk **configuration** in `StrategyConfig`. The Strategy Engine, future backtests, and UI-editable settings must all consume that object. See [strategy-engine.md](strategy-engine.md).
 
-This package still does not persist strategies or generate candidates. Edge calculation remains upstream of the engine.
+This package still does not persist strategies. Candidate generation lives in the [Candidate Engine](candidate-engine.md): a future football model outputs a score distribution; CandidateEngine derives settlement probabilities and sets `BettingOpportunity.edge` to expected net return per unit stake.
 
 ## Preset is data, not behavior
 

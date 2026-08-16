@@ -24,7 +24,9 @@ Live recommendation flows must use the same four engines. Backtest v1 only orche
 
 ## Prepared input
 
-The engine does not invent opportunities. Each `HistoricalBettingOpportunity` already contains a `BettingOpportunity` (odds, edge, settlement probability distribution, event/league/betting date) plus the normalized `BettingMarket` / `BettingSelection` that would have been bet and the exact `decisionAt` instant.
+The engine does not invent opportunities. Each `HistoricalBettingOpportunity` already contains a `BettingOpportunity` (odds, **edge = expected net return rate**, settlement probability distribution, event/league/betting date) plus the normalized `BettingMarket` / `BettingSelection` that would have been bet and the exact `decisionAt` instant.
+
+The eventual historical dataset builder will obtain that `BettingOpportunity` from [CandidateEngine](candidate-engine.md) (point-in-time score distribution + observed odds). Backtest Engine must not recalculate odds, edge, or settlement probabilities, and must not derive those probabilities from the event's final score.
 
 `BettingOpportunity.odds` is the decision-time price used for payout. `BettingSelection.odds` is the same observed decimal price, so the two must match. The engine never substitutes later or closing odds.
 
