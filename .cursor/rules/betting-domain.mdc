@@ -95,6 +95,20 @@ Closing odds, kickoff, and cutoff rules must be explicit. Do not silently use "l
 
 If a backtest metric changes unexpectedly, investigate why. Do not "fix" it by updating expected test values. See `testing.mdc`.
 
+## Strategy configuration
+
+A `StrategyPreset` is default data for a `StrategyConfig`. It is not behavior.
+
+A future Strategy Engine must consume `StrategyConfig` only. Do not branch on preset identity (`if (preset == DEFENSIVE)`).
+
+Do not implement Martingale, progressive staking, or any loss-chasing field (`lossMultiplier`, `recoveryMultiplier`, `doubleAfterLoss`, and similar). Drawdown may reduce stake (`drawdownStakeMultiplier <= 1`); it must never increase stake after a loss.
+
+`maxStakeRate` and exposure caps are hard limits in configuration. Later stake/exposure engines must not bypass them.
+
+Vault is not active bankroll. Vault configuration (`vaultEnabled`, `vaultSweepRate`) must not later auto-fund drawdown losses from Vault back into staking capital.
+
+Strategy percentages are configuration hypotheses, not hardcoded truths. Do not scatter those rates through engines, services, or UI as magic numbers.
+
 ## When uncertain
 
 Stop and ask rather than inventing a settlement rule or leaking future information into a backtest.
