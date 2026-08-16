@@ -1,8 +1,8 @@
 # Strategy domain
 
-SafeEdge stores staking and risk **configuration** in `StrategyConfig`. A future Strategy Engine, backtests, and UI-editable settings must all consume that object.
+SafeEdge stores staking and risk **configuration** in `StrategyConfig`. The Strategy Engine, future backtests, and UI-editable settings must all consume that object. See [strategy-engine.md](strategy-engine.md).
 
-This package does not execute strategy. It does not compute Kelly stakes, sweep Vault, track exposure, or apply drawdown state.
+This package still does not persist strategies or generate candidates. Edge calculation remains upstream of the engine.
 
 ## Preset is data, not behavior
 
@@ -30,7 +30,7 @@ Do not store display percents or `double`/`float` rates in this domain.
 
 `vaultEnabled` and `vaultSweepRate` are configuration only. Vault is not active bankroll. Execution of sweeps, transfers, and balances lives in the bankroll accounting domain; see [bankroll-accounting.md](bankroll-accounting.md).
 
-`stakingMode` and `kellyFraction` / `flatStakeRate` are configuration only. Kelly mathematics (including Asian Handicap) is a later engine.
+`stakingMode` and `kellyFraction` / `flatStakeRate` are configuration only. Generalized Kelly and stake gates live in the Strategy Engine.
 
 Match / league / daily exposure fields are caps, not live exposure.
 
