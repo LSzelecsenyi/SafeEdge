@@ -20,8 +20,18 @@ public final class TippmixOfferFixtures {
 	}
 
 	public static TippmixEventDto event(int sportId, int isLive, boolean hasVisiblePrematchMarket, List<TippmixMarketDto> markets) {
+		return event(5311343L, sportId, isLive, 0, hasVisiblePrematchMarket, markets);
+	}
+
+	public static TippmixEventDto event(
+			long eventId,
+			int sportId,
+			int isLive,
+			int isOutright,
+			boolean hasVisiblePrematchMarket,
+			List<TippmixMarketDto> markets) {
 		return new TippmixEventDto(
-				5311343L,
+				eventId,
 				72409632L,
 				KICKOFF,
 				"Djurgarden - AIK Stockholm",
@@ -37,7 +47,7 @@ public final class TippmixOfferFixtures {
 				sportId,
 				"Football",
 				isLive,
-				0,
+				isOutright,
 				false,
 				hasVisiblePrematchMarket,
 				0,

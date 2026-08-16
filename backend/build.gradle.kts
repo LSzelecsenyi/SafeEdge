@@ -47,4 +47,6 @@ tasks.withType<Test> {
 
 tasks.bootRun {
 	jvmArgs("-Duser.timezone=UTC")
+	val profiles = (findProperty("springProfiles") as String?)?.takeIf { it.isNotBlank() } ?: "local"
+	args("--spring.profiles.active=$profiles")
 }

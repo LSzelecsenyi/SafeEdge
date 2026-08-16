@@ -33,3 +33,8 @@ safeedge:
     tippmix:
       base-url: ${TIPPMIX_BASE_URL:https://api.tippmix.hu}
       manual-event-id: ${TIPPMIX_MANUAL_EVENT_ID:}
+      collector:
+        enabled: ${TIPPMIX_COLLECTOR_ENABLED:true}
+        fixed-delay: ${TIPPMIX_COLLECTOR_FIXED_DELAY:PT5M}
+        page-size: ${TIPPMIX_COLLECTOR_PAGE_SIZE:20}
+        max-pages: ${TIPPMIX_COLLECTOR_MAX_PAGES:50}

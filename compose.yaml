@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: safeedge
+      POSTGRES_USER: safeedge
+      POSTGRES_PASSWORD: safeedge
+    ports:
+      - "5433:5432"
+    volumes:
+      - safeedge-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U safeedge -d safeedge"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  safeedge-postgres-data:

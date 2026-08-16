@@ -44,7 +44,7 @@ public class TippmixIngestionManager {
 		BettingOffer offer = normalizer.normalize(event);
 		Instant capturedAt = clock.instant();
 		OfferSaveResult saved = persistenceService.saveObservation(offer, capturedAt);
-		log.info(
+		log.debug(
 				"Tippmix ingestion complete: provider=Tippmix eventId={} supportedMarkets={} selections={} snapshots={} capturedAt={}",
 				tippmixEventId,
 				saved.supportedMarketCount(),
@@ -56,14 +56,20 @@ public class TippmixIngestionManager {
 
 	private void requirePrematchFootball(TippmixEventDto event, long tippmixEventId) {
 		if (!Integer.valueOf(TippmixBettingOfferNormalizer.FOOTBALL_SPORT_ID).equals(event.sportId())) {
-			throw new TippmixIngestionException(tippmixEventId, "Tippmix event is not football");
+			throw new TippmixIngestionException(
+					tippmixEventId, "Tippmix event is not football", TippmixIngestionException.Reason.NOT_FOOTBALL);
 		}
 		if (!Integer.valueOf(0).equals(event.isLive())) {
-			throw new TippmixIngestionException(tippmixEventId, "Tippmix event is not pre-match (isLive must be 0)");
+			throw new TippmixIngestionException(
+					tippmixEventId,
+					"Tippmix event is not pre-match (isLive must be 0)",
+					TippmixIngestionException.Reason.NOT_PREMATCH);
 		}
 		if (!Boolean.TRUE.equals(event.hasVisiblePrematchMarket())) {
 			throw new TippmixIngestionException(
-					tippmixEventId, "Tippmix event has no visible pre-match market");
+					tippmixEventId,
+					"Tippmix event has no visible pre-match market",
+					TippmixIngestionException.Reason.NO_VISIBLE_PREMATCH_MARKET);
 		}
 	}
 
