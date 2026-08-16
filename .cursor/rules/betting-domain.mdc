@@ -157,6 +157,8 @@ football-data.co.uk AH lines are home-perspective; canonical `BettingMarket.line
 
 AH coverage denominator is persisted historical match count, not quote-row count. Any-source coverage counts distinct matches once. Do not assume uniform AH coverage across leagues or seasons; choose a modelling/backtest window from measured coverage, not from a hardcoded “usable” threshold.
 
+Historical pre-match features may use only information strictly available before the match. The current or future result must never enter `PreMatchFeatures`. Date-only same-day matches must not leak into each other. Unavailable history is null, never a synthetic zero. Bookmaker odds are not football-performance features unless a later task explicitly designs that. Feature generation is deterministic.
+
 ## When uncertain
 
 Stop and ask rather than inventing a settlement rule or leaking future information into a backtest.

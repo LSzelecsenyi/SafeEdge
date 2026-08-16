@@ -29,4 +29,10 @@ public interface HistoricalMatchRepository extends JpaRepository<HistoricalMatch
 			""")
 	List<HistoricalLeagueSeasonCount> countMatchesByLeagueSeason(@Param("source") HistoricalSource source);
 
+	List<HistoricalMatchEntity> findBySourceAndCanonicalCompetitionAndSeasonStartYearBetweenOrderByMatchDateAscSourceRowNumberAscIdAsc(
+			HistoricalSource source,
+			CanonicalCompetition canonicalCompetition,
+			Integer fromSeasonStartYear,
+			Integer toSeasonStartYear);
+
 }

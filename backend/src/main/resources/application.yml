@@ -48,3 +48,8 @@ safeedge:
       bulk-start-season: ${SAFEEDGE_HISTORICAL_BULK_START_SEASON:}
       bulk-end-season: ${SAFEEDGE_HISTORICAL_BULK_END_SEASON:}
       bulk-leagues: ${SAFEEDGE_HISTORICAL_BULK_LEAGUES:}
+  historical:
+    features:
+      competition: ${SAFEEDGE_HISTORICAL_FEATURES_COMPETITION:}
+      from-season: ${SAFEEDGE_HISTORICAL_FEATURES_FROM_SEASON:}
+      to-season: ${SAFEEDGE_HISTORICAL_FEATURES_TO_SEASON:}
