@@ -10,7 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 
 @Import(PostgresTestcontainersConfig.class)
-@SpringBootTest
+@SpringBootTest(properties = "safeedge.providers.tippmix.collector.enabled=false")
 class SafeEdgeApplicationTests {
 
 	@Autowired
