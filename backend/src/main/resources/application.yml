@@ -32,3 +32,4 @@ safeedge:
   providers:
     tippmix:
       base-url: ${TIPPMIX_BASE_URL:https://api.tippmix.hu}
+      manual-event-id: ${TIPPMIX_MANUAL_EVENT_ID:}

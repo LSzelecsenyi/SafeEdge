@@ -1,0 +1,262 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-betting-offer
+      author: safeedge
+      comment: Normalized betting offer and append-only odds snapshots
+      changes:
+        - createTable:
+            tableName: betting_event
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: provider
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_event_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: betradar_id
+                  type: BIGINT
+              - column:
+                  name: name
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_time
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: competition_external_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: competition_name
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: home_participant_external_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: home_participant_name
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: away_participant_external_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: away_participant_name
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: betting_event
+            constraintName: uk_betting_event_provider_external_id
+            columnNames: provider, external_event_id
+
+        - createTable:
+            tableName: betting_market
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: provider
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_market_id
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: provider_market_real_no
+                  type: INTEGER
+              - column:
+                  name: provider_market_name
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: provider_market_type
+                  type: INTEGER
+              - column:
+                  name: provider_market_sub_type
+                  type: INTEGER
+              - column:
+                  name: provider_market_version
+                  type: INTEGER
+              - column:
+                  name: market_type
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: line
+                  type: NUMERIC(12, 4)
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_betting_market_event
+            baseTableName: betting_market
+            baseColumnNames: event_id
+            referencedTableName: betting_event
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            tableName: betting_market
+            constraintName: uk_betting_market_provider_external_id
+            columnNames: provider, external_market_id
+
+        - createTable:
+            tableName: betting_selection
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: market_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: provider
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_outcome_no
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_outcome_real_no
+                  type: INTEGER
+              - column:
+                  name: provider_outcome_name
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: selection_type
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: line
+                  type: NUMERIC(12, 4)
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_betting_selection_market
+            baseTableName: betting_selection
+            baseColumnNames: market_id
+            referencedTableName: betting_market
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            tableName: betting_selection
+            constraintName: uk_betting_selection_market_outcome
+            columnNames: market_id, external_outcome_no
+
+        - createTable:
+            tableName: odds_snapshot
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: selection_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: odds
+                  type: NUMERIC(12, 4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: captured_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: provider_market_version
+                  type: INTEGER
+        - addForeignKeyConstraint:
+            constraintName: fk_odds_snapshot_selection
+            baseTableName: odds_snapshot
+            baseColumnNames: selection_id
+            referencedTableName: betting_selection
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - createIndex:
+            indexName: idx_odds_snapshot_selection_captured
+            tableName: odds_snapshot
+            columns:
+              - column:
+                  name: selection_id
+              - column:
+                  name: captured_at
