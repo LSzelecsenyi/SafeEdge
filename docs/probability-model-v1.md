@@ -109,3 +109,5 @@ v1 exists so later models can be compared against a clean, leak-free baseline.
 ## Manual / API
 
 None. In-memory only. No model tables, REST, or UI.
+
+Walk-forward candidate generation and strategy comparison: [historical walk-forward evaluation](historical-walk-forward-evaluation.md).

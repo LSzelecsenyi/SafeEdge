@@ -8,3 +8,4 @@ Architecture notes, Tippmix API discovery, and other project documentation live 
 - [Historical data import](historical-data-import.md) — football-data.co.uk Big 5 results, bulk import, and AH coverage audit (not Tippmix)
 - [Historical features](historical-features.md) — point-in-time pre-match features and score targets
 - [Probability model v1](probability-model-v1.md) — time-decayed independent Poisson score distribution (baseline, not a strategy)
+- [Historical walk-forward evaluation](historical-walk-forward-evaluation.md) — prior-only dataset builder, CandidateEngine, and BacktestEngine comparison (not Tippmix odds)

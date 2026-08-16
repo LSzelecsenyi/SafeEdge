@@ -117,4 +117,6 @@ Logs a summary and a small sample of rows.
 
 ## Out of scope
 
-Poisson, Dixon-Coles, Elo, xG, ML, ClubElo, TeamAlias, CandidateEngine/BacktestRequest wiring, feature tables, UI.
+Dixon-Coles, Elo, xG, ML, ClubElo, TeamAlias, feature tables, UI.
+
+Walk-forward CandidateEngine / BacktestEngine wiring: [historical-walk-forward-evaluation.md](historical-walk-forward-evaluation.md).

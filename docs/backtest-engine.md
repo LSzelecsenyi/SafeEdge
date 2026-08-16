@@ -26,7 +26,7 @@ Live recommendation flows must use the same four engines. Backtest v1 only orche
 
 The engine does not invent opportunities. Each `HistoricalBettingOpportunity` already contains a `BettingOpportunity` (odds, **edge = expected net return rate**, settlement probability distribution, event/league/betting date) plus the normalized `BettingMarket` / `BettingSelection` that would have been bet and the exact `decisionAt` instant.
 
-The eventual historical dataset builder will obtain that `BettingOpportunity` from [CandidateEngine](candidate-engine.md) (point-in-time score distribution + observed odds). Backtest Engine must not recalculate odds, edge, or settlement probabilities, and must not derive those probabilities from the event's final score.
+The walk-forward builder that prepares that stream is documented in [historical walk-forward evaluation](historical-walk-forward-evaluation.md). Backtest Engine must not recalculate odds, edge, or settlement probabilities, and must not derive those probabilities from the event's final score. It still does not query persistence.
 
 `BettingOpportunity.odds` is the decision-time price used for payout. `BettingSelection.odds` is the same observed decimal price, so the two must match. The engine never substitutes later or closing odds.
 
@@ -115,7 +115,7 @@ Payout uses the opportunity's historical odds and the accepted stake. Accounting
 
 - Probability modeling or deriving distributions from final scores
 - Candidate generation or Tippmix normalization
-- Loading `odds_snapshot` / `betting_event` / `match_result` into a `BacktestRequest`
+- Querying persistence (the walk-forward builder loads historical rows and passes a prepared `BacktestRequest`)
 - Persistence (`backtest_*` tables), REST, or Angular UI
 - Monte Carlo, bootstrap, or parameter optimization
 - CAGR, Sharpe, Sortino, risk of ruin, monthly summaries

@@ -168,6 +168,7 @@ If those 6 Pinnacle and 4 Market Max matches sit inside the 8 Bet365 matches, AN
 
 ## Out of scope
 
-Probability models, Dixon-Coles, ClubElo, StatsBomb, Understat, 1X2/totals persistence, BacktestRequest builder, UI, TeamAlias, coverage REST API, historical scheduler.
+Dixon-Coles, ClubElo, StatsBomb, Understat, 1X2/totals persistence, UI, TeamAlias, coverage REST API, historical scheduler.
 
+Walk-forward evaluation of imported matches: [historical-walk-forward-evaluation.md](historical-walk-forward-evaluation.md).
 Feature rows are built separately; see [historical-features.md](historical-features.md).

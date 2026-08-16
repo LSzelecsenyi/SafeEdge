@@ -100,7 +100,9 @@ Missing historical odds or lines are never fabricated, interpolated, or filled f
 
 Static historical CSV imports are idempotent upserts of source records. They are not live Tippmix `odds_snapshot` ticks and must never be labelled as Tippmix odds.
 
-Do not invent `kickoffUtc` or `observedAt` when the source has only a date or no timestamp. Fake times must not be used as look-ahead protection.
+Do not invent `kickoffUtc` or `observedAt` when the source has only a date or no timestamp. Fake times must not be stored as kickoff or odds observation. A walk-forward backtest may use documented synthetic `decisionAt` / `settlementAt` instants derived from `matchDate` solely to satisfy chronological engine ordering; those instants are not real observation times.
+
+Historical evaluation pricing source must stay explicit. football-data.co.uk quotes are never Tippmix odds. Do not join live Tippmix prices or TeamAlias/ClubElo identity into historical walk-forward v1.
 
 Historical bulk imports stay sequential and reuse the single-season importer. One source-file failure must not abort the remaining league-season files. Re-runs are idempotent upserts, not append-only snapshots.
 

@@ -18,6 +18,7 @@ Prefer pure tests without Spring when Spring is unnecessary.
 - Historical bulk import tests mock the single-season importer. AH coverage tests use persisted fixtures or Testcontainers; the coverage denominator is match count, and any-source coverage must count distinct matches.
 - Historical feature builder tests are pure JUnit. Assert no self-leakage, no future leakage, and no same-date leakage. Do not derive features from bookmaker odds.
 - Probability model tests are pure JUnit. Assert no target/future/same-date leakage, no odds in fitting, insufficient history ≠ fake distribution, and that `ScoreProbabilityDistribution` sums to 1.
+- Historical walk-forward tests must assert prior-only training, same-date isolation, warmup seasons that do not generate bets, selected quote source only, HOME/AWAY odds and lines, negative-EV candidates remaining in the stream, and strategy comparison on one prepared dataset. Do not derive candidate edge by hand. Do not download football-data.co.uk. Do not treat a large live backtest as a unit test.
 - Collaborators: Mockito (`@ExtendWith(MockitoExtension.class)`).
 - Time-dependent logic: inject `Clock` and use `Clock.fixed(...)`.
 - If a mutable clock is used, reset it in `@BeforeEach` so tests do not leak time.

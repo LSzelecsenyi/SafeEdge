@@ -16,6 +16,11 @@ public interface HistoricalAhOfferRepository extends JpaRepository<HistoricalAhO
 			HistoricalQuoteSource quoteSource,
 			HistoricalObservationType observationType);
 
+	List<HistoricalAhOfferEntity> findByQuoteSourceAndObservationTypeAndHistoricalMatch_IdIn(
+			HistoricalQuoteSource quoteSource,
+			HistoricalObservationType observationType,
+			List<Long> historicalMatchIds);
+
 	@Query("""
 			select new com.safeedge.historical.repository.HistoricalLeagueSeasonQuoteCount(
 				m.canonicalCompetition, m.seasonStartYear, m.seasonEndYear, o.quoteSource, count(distinct m.id))
