@@ -38,8 +38,8 @@ public final class SettlementEngine {
 		}
 		BigDecimal marketLine = requireLine(market.line(), "Asian handicap market line is required");
 		BigDecimal handicap = requireLine(selection.line(), "Asian handicap selection line is required");
-		requireSupportedAsianIncrement(handicap);
 		requireAsianLineConsistency(type, marketLine, handicap);
+		AsianHandicapLines.requireSupportedIncrement(handicap);
 
 		int selectedGoalDifference = type == SelectionType.HOME
 				? score.homeGoals() - score.awayGoals()
@@ -153,13 +153,6 @@ public final class SettlementEngine {
 			throw new SettlementException(
 					"Asian handicap " + type + " line " + selectionLine.toPlainString()
 							+ " is inconsistent with market line " + marketLine.toPlainString());
-		}
-	}
-
-	private static void requireSupportedAsianIncrement(BigDecimal line) {
-		if (!isMultipleOf(line, QUARTER)) {
-			throw new SettlementException(
-					"Asian handicap line must be a multiple of 0.25, not " + line.toPlainString());
 		}
 	}
 

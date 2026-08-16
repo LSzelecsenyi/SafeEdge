@@ -41,3 +41,7 @@ safeedge:
       results:
         enabled: ${TIPPMIX_RESULTS_ENABLED:false}
         fixed-delay: ${TIPPMIX_RESULTS_FIXED_DELAY:PT15M}
+    football-data:
+      base-url: ${FOOTBALL_DATA_BASE_URL:https://www.football-data.co.uk}
+      manual-league: ${SAFEEDGE_HISTORICAL_LEAGUE:}
+      manual-season-start: ${SAFEEDGE_HISTORICAL_SEASON_START:}

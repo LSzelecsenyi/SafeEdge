@@ -1,0 +1,190 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-historical-football-data
+      author: safeedge
+      comment: Provider-independent historical matches and static pre-match AH quotes
+      changes:
+        - createTable:
+            tableName: historical_match
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: source
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_competition_code
+                  type: VARCHAR(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: canonical_competition
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: season_start_year
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: season_end_year
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: match_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_kickoff_time
+                  type: VARCHAR(16)
+              - column:
+                  name: kickoff_utc
+                  type: TIMESTAMPTZ
+              - column:
+                  name: source_home_team_name
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_away_team_name
+                  type: VARCHAR(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: home_goals
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: away_goals
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_file
+                  type: VARCHAR(256)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_row_number
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: historical_match
+            constraintName: uk_historical_match_source_identity
+            columnNames: source, canonical_competition, season_start_year, season_end_year, match_date, source_home_team_name, source_away_team_name
+
+        - createTable:
+            tableName: historical_ah_offer
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: historical_match_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quote_source
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: home_handicap_line
+                  type: NUMERIC(12, 4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: home_odds
+                  type: NUMERIC(12, 4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: away_odds
+                  type: NUMERIC(12, 4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: observation_type
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: observed_at
+                  type: TIMESTAMPTZ
+              - column:
+                  name: source_line_column
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_home_odds_column
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_away_odds_column
+                  type: VARCHAR(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: raw_line_value
+                  type: VARCHAR(64)
+              - column:
+                  name: raw_home_odds_value
+                  type: VARCHAR(64)
+              - column:
+                  name: raw_away_odds_value
+                  type: VARCHAR(64)
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMPTZ
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_historical_ah_offer_match
+            baseTableName: historical_ah_offer
+            baseColumnNames: historical_match_id
+            referencedTableName: historical_match
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addUniqueConstraint:
+            tableName: historical_ah_offer
+            constraintName: uk_historical_ah_offer_identity
+            columnNames: historical_match_id, quote_source, observation_type

@@ -90,6 +90,18 @@ Raw payloads are evidence, not a substitute for a normalized domain model. Downs
 - Tolerate additive unknown fields where practical.
 - Integration failures must not silently corrupt or partially overwrite previously stored historical data.
 
+## Historical file sources
+
+Historical source DTOs (football-data.co.uk column names, CSV rows) stay inside that provider's adapter. Do not leak them into engines, CandidateEngine, BacktestEngine, or strategy domain.
+
+football-data.co.uk Asian Handicap lines are home-team perspective; SafeEdge `BettingMarket.line` is the same home-side convention. Conversion must be explicitly tested. Do not silently invert.
+
+Missing historical odds or lines are never fabricated, interpolated, or filled from 1X2. Incomplete quotes skip that quote only.
+
+Static historical CSV imports are idempotent upserts of source records. They are not live Tippmix `odds_snapshot` ticks and must never be labelled as Tippmix odds.
+
+Do not invent `kickoffUtc` or `observedAt` when the source has only a date or no timestamp. Fake times must not be used as look-ahead protection.
+
 ## When uncertain
 
 If a provider field cannot be mapped cleanly to the internal model, stop and ask instead of leaking the source shape inward.

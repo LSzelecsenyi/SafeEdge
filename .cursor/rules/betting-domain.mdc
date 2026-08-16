@@ -37,6 +37,8 @@ Use backend timestamps and UTC. Observation time is business data, not a UI conc
 
 Closing odds, snapshot age, and pre-match eligibility must be derived from this history, not from a single mutable "current odds" field that destroys the past.
 
+Static historical file imports (football-data.co.uk) are different: they are idempotent upserts of source records, not append-only live ticks. Do not store them as Tippmix `odds_snapshot` rows. Do not invent `observedAt` when the source has no timestamp.
+
 ## Canonical betting mathematics
 
 Betting calculations must have one canonical implementation and be reused.
@@ -148,6 +150,10 @@ CandidateEngine evaluates value from a point-in-time `ScoreProbabilityDistributi
 Asian Handicap candidate EV must use the full five-outcome settlement distribution produced by `SettlementEngine` on each scoreline. Do not treat `1 / odds` as a predictive model or as AH break-even probability.
 
 Scoreline probabilities must be estimates that would have been known at decision time. Do not derive them from that event's final score, `MatchResult`, or `SettlementResult`, and do not fabricate them from bookmaker odds.
+
+## Historical sources
+
+football-data.co.uk AH lines are home-perspective; canonical `BettingMarket.line` is the same home-side convention (explicit conversion tests required). Missing historical odds are never fabricated. Historical source odds must never be labelled Tippmix. Date-only rows must not get an invented UTC kickoff.
 
 ## When uncertain
 
